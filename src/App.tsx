@@ -6,10 +6,10 @@ import {
   ArrowSwapRegular,
   ArrowUndoRegular,
   CameraRegular,
-  ClipboardPasteRegular,
+  // ClipboardPasteRegular,
   CodeRegular,
   CopyRegular,
-  CutRegular,
+  // CutRegular,
   DocumentAddRegular,
   DocumentArrowUpRegular,
   TextBulletListSquareRegular,
@@ -192,7 +192,7 @@ function App() {
 
   async function notifyIfAnyPendingChanges(continueCallback?: () => void) {
     if (hasChangePending) {
-      const confirmed = await window.confirm(
+      const confirmed = window.confirm(
         "You have unsaved changes. Are you sure you want to leave?"
       );
       if (!confirmed) {
