@@ -17,7 +17,7 @@ export default defineConfig({
       manifest: {
         name: "PWA Notepad",
         short_name: "PWANotepad",
-        start_url: "/app",
+        start_url: "/",
         theme_color: "#000000",
         background_color: "#ffffff",
         icons: [

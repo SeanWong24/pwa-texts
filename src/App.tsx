@@ -48,13 +48,19 @@ import { useSearchParams } from "react-router-dom";
 type EOL = "LF" | "CRLF";
 
 let fileHandle: FileSystemFileHandle | undefined = undefined;
+let title: string | undefined;
+let preventingMarkChangePendingNextTime = false;
 let hasChangePending = false;
 function updatePendingChangeStatus(value: boolean) {
   hasChangePending = value;
-  if (value) {
-    document.title = `${fileHandle?.name ?? "Untitled"} *`;
+  if (preventingMarkChangePendingNextTime) {
+    hasChangePending = false;
+    preventingMarkChangePendingNextTime = false;
+  }
+  if (hasChangePending) {
+    document.title = `${title ?? fileHandle?.name ?? "Untitled"} *`;
   } else {
-    document.title = fileHandle?.name ?? "Untitled";
+    document.title = title ?? fileHandle?.name ?? "Untitled";
   }
 }
 
@@ -86,9 +92,10 @@ function App() {
       const language = searchParams.get("language") ?? "plaintext";
       const value = base64ToText(searchParams.get("value") ?? "");
       setLanguage(language);
+      preventingMarkChangePendingNextTime = true;
       updateEditorContent(value);
       updateEOLBasedOnContent(value);
-      document.title = "Snapshot";
+      title = "Snapshot";
     }
 
     if ("launchQueue" in window) {
@@ -134,15 +141,16 @@ function App() {
 
   function createNew() {
     notifyIfAnyPendingChanges(async () => {
+      history.pushState(null, "", "/");
       fileHandle = void 0;
       updateEditorContent("");
+      title = "Untitled";
       updatePendingChangeStatus(true);
       setEndOfLine(defaultEndOfLine);
-      history.pushState(null, "", "/app");
     });
   }
 
-  async function openFile(_fileHandle?: FileSystemFileHandle) {
+  function openFile(_fileHandle?: FileSystemFileHandle) {
     notifyIfAnyPendingChanges(async () => {
       fileHandle =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -150,6 +158,7 @@ function App() {
       if (!fileHandle) {
         return;
       }
+      history.pushState(null, "", "/");
       const file = await fileHandle.getFile();
       const extension = file.name.split(".").slice(1).pop() ?? "";
       const content = await file.text();
@@ -160,13 +169,10 @@ function App() {
           ?.id ??
         "plaintext";
       setLanguage(language);
+      preventingMarkChangePendingNextTime = true;
       updateEditorContent(content);
       updateEOLBasedOnContent(content);
-      setTimeout(() => {
-        updatePendingChangeStatus(false);
-      });
-      document.title = file.name;
-      history.pushState(null, "", "/app");
+      title = file.name;
     });
   }
 
@@ -202,10 +208,13 @@ function App() {
   }
 
   function updateEditorContent(content: string) {
-    if (!editorElement.current) {
-      return;
-    }
-    editorElement.current.value = content;
+    setTimeout(() => {
+      if (!editorElement.current) {
+        return;
+      }
+      // editorElement.current.editor?.getModel()?.setValue(content);
+      editorElement.current.value = content;
+    });
   }
 
   async function notifyIfAnyPendingChanges(continueCallback?: () => void) {
@@ -254,9 +263,7 @@ function App() {
     }
     const base64 = textToBase64(content);
     const url = new URL(
-      `/app?snapshot=1&language=${language}&value=${encodeURIComponent(
-        base64
-      )}`,
+      `/?snapshot=1&language=${language}&value=${encodeURIComponent(base64)}`,
       location.origin
     );
     return url.href;
@@ -281,11 +288,7 @@ function App() {
               <MenuItem
                 icon={<DocumentArrowUpRegular />}
                 secondaryContent="Ctrl + O"
-                onClick={async () => {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const fileHandle = await (window as any).showOpenFilePicker();
-                  openFile(fileHandle[0]);
-                }}
+                onClick={async () => openFile()}
               >
                 Open
               </MenuItem>
