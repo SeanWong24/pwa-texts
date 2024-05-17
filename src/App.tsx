@@ -145,6 +145,7 @@ function App() {
       fileHandle = void 0;
       updateEditorContent("");
       title = "Untitled";
+      setLanguage("plaintext");
       updatePendingChangeStatus(true);
       setEndOfLine(defaultEndOfLine);
     });
