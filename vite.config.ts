@@ -30,7 +30,7 @@ export default defineConfig({
         ],
         file_handlers: [
           {
-            action: "/app",
+            action: "/",
             accept: {
               "text/*": [
                 ".txt",
