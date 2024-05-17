@@ -11,10 +11,14 @@ export default defineConfig({
       devOptions: {
         enabled: true,
       },
+      workbox: {
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+      },
       manifest: {
         name: "PWA Notepad",
         short_name: "PWANotepad",
         start_url: "/app",
+        theme_color: "#000000",
         background_color: "#ffffff",
         icons: [
           {
