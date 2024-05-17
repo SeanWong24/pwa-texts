@@ -528,7 +528,9 @@ function App() {
                   </MenuList>
                 </MenuPopover>
               </Menu>
-              <MenuItem icon={<CodeRegular />}>Embed</MenuItem>
+              <MenuItem icon={<CodeRegular />} disabled>
+                Embed
+              </MenuItem>
             </MenuList>
           </MenuPopover>
         </Menu>
