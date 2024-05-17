@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import {
+  ArrowEnterLeftRegular,
   ArrowExitRegular,
   ArrowRedoRegular,
   ArrowSwapRegular,
@@ -42,6 +43,8 @@ import { getTheme } from "./utils/theme";
 
 import "./App.css";
 
+type EOL = "LF" | "CRLF";
+
 let fileHandle: FileSystemFileHandle | undefined = undefined;
 let hasChangePending = false;
 function updatePendingChangeStatus(value: boolean) {
@@ -58,10 +61,10 @@ function App() {
   const [showMinimap, setShowMinimap] = React.useState(true);
   const [supportedLanguages, setSupportedLanguages] =
     React.useState<monaco.languages.ILanguageExtensionPoint[]>();
-  const [endOfLine, setEndOfLine] =
-    React.useState<monaco.editor.EndOfLineSequence>(
-      monaco.editor.EndOfLineSequence.LF
-    );
+  const [defaultEndOfLine, setDefualtEndOfLine] = React.useState<EOL>(
+    (localStorage.getItem("defualtEndOfLine") as EOL | null) ?? "LF"
+  );
+  const [endOfLine, setEndOfLine] = React.useState<EOL>(defaultEndOfLine);
   const [language, setLanguage] = React.useState("plaintext");
   const [cursorPosition, setCursorPosition] = React.useState<monaco.Position>();
   const [characterCount, setCharacterCount] = React.useState<number>();
@@ -92,7 +95,17 @@ function App() {
   }, []);
 
   useEffect(() => {
-    editorElement.current?.editor?.getModel()?.setEOL(endOfLine);
+    localStorage.setItem("defualtEndOfLine", defaultEndOfLine);
+  }, [defaultEndOfLine]);
+
+  useEffect(() => {
+    editorElement.current?.editor
+      ?.getModel()
+      ?.setEOL(
+        monaco.editor.EndOfLineSequence[
+          endOfLine as keyof typeof monaco.editor.EndOfLineSequence
+        ]
+      );
   }, [endOfLine]);
 
   return (
@@ -112,6 +125,7 @@ function App() {
       fileHandle = void 0;
       updateEditorContent("");
       updatePendingChangeStatus(true);
+      setEndOfLine(defaultEndOfLine);
     });
   }
 
@@ -134,6 +148,8 @@ function App() {
         "plaintext";
       setLanguage(language);
       updateEditorContent(content);
+      const endOfLine = content.match(/\r\n/) ? "CRLF" : "LF";
+      setEndOfLine(endOfLine);
       setTimeout(() => {
         updatePendingChangeStatus(false);
       });
@@ -304,6 +320,40 @@ function App() {
               >
                 Replace
               </MenuItem>
+              <MenuDivider />
+              <Menu>
+                <MenuTrigger disableButtonEnhancement>
+                  <MenuItem icon={<ArrowEnterLeftRegular />}>
+                    Default End Of Line
+                  </MenuItem>
+                </MenuTrigger>
+                <MenuPopover>
+                  <MenuList
+                    checkedValues={{
+                      defaultEndOfLine: [defaultEndOfLine],
+                    }}
+                  >
+                    <MenuItemRadio
+                      name="defaultEndOfLine"
+                      value="LF"
+                      onClick={() => {
+                        setDefualtEndOfLine("LF");
+                      }}
+                    >
+                      LF
+                    </MenuItemRadio>
+                    <MenuItemRadio
+                      name="defaultEndOfLine"
+                      value="CRLF"
+                      onClick={() => {
+                        setDefualtEndOfLine("CRLF");
+                      }}
+                    >
+                      CRLF
+                    </MenuItemRadio>
+                  </MenuList>
+                </MenuPopover>
+              </Menu>
             </MenuList>
           </MenuPopover>
         </Menu>
@@ -403,8 +453,8 @@ function App() {
           );
           setCharacterCount(editorElement.current?.editor?.getValue().length);
         }}
-        oneditorInitialized={({ detail: { monaco, editor } }) => {
-          setSupportedLanguages(monaco?.languages.getLanguages());
+        oneditorInitialized={({ detail: { editor } }) => {
+          setSupportedLanguages(monaco.languages.getLanguages());
           editor = editor as monaco.editor.IStandaloneCodeEditor | undefined; // TODO temp fix
           setCursorPosition(editor?.getPosition() ?? void 0);
           editor?.onDidChangeCursorPosition((event) => {
@@ -413,7 +463,13 @@ function App() {
           // TODO refactor this
           setLinesCount(editor?.getModel()?.getLineCount());
           setCharacterCount(editor?.getValue().length);
-          editor?.getModel()?.setEOL(endOfLine);
+          editor
+            ?.getModel()
+            ?.setEOL(
+              monaco.editor.EndOfLineSequence[
+                endOfLine as keyof typeof monaco.editor.EndOfLineSequence
+              ]
+            );
         }}
       ></MonacoEditor>
     );
@@ -434,25 +490,18 @@ function App() {
         <ToolbarDivider />
         <Menu>
           <MenuTrigger>
-            <ToolbarButton aria-label="File">
-              {monaco.editor.EndOfLineSequence[endOfLine]}
-            </ToolbarButton>
+            <ToolbarButton aria-label="File">{endOfLine}</ToolbarButton>
           </MenuTrigger>
           <MenuPopover>
             <MenuList
               checkedValues={{
-                endOfLine: [monaco.editor.EndOfLineSequence[endOfLine]],
+                endOfLine: [endOfLine],
               }}
               onCheckedValueChange={(_e, { name, checkedItems }) => {
                 switch (name) {
                   case "endOfLine": {
-                    const value =
-                      monaco.editor.EndOfLineSequence[
-                        (checkedItems?.[0] ??
-                          "") as keyof typeof monaco.editor.EndOfLineSequence
-                      ];
-
-                    setEndOfLine(value ?? monaco.editor.EndOfLineSequence.LF);
+                    const value = checkedItems?.[0] as EOL | undefined;
+                    setEndOfLine(value ?? "LF");
                     break;
                   }
                 }
