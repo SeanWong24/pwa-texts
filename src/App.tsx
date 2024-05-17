@@ -40,8 +40,10 @@ import { HeyMonacoEditor } from "@hey-web-components/monaco-editor";
 import * as monaco from "monaco-editor";
 import mousetrap from "mousetrap";
 import { getTheme } from "./utils/theme";
+import { base64ToText, textToBase64 } from "./utils/snapshot";
 
 import "./App.css";
+import { useSearchParams } from "react-router-dom";
 
 type EOL = "LF" | "CRLF";
 
@@ -69,6 +71,7 @@ function App() {
   const [cursorPosition, setCursorPosition] = React.useState<monaco.Position>();
   const [characterCount, setCharacterCount] = React.useState<number>();
   const [linesCount, setLinesCount] = React.useState<number>();
+  const [searchParams] = useSearchParams();
 
   const editorElement = useRef<HeyMonacoEditor>(null);
 
@@ -78,6 +81,15 @@ function App() {
         event.preventDefault();
       }
     });
+
+    if (searchParams.get("snapshot")) {
+      const language = searchParams.get("language") ?? "plaintext";
+      const value = base64ToText(searchParams.get("value") ?? "");
+      setLanguage(language);
+      updateEditorContent(value);
+      updateEOLBasedOnContent(value);
+      document.title = "Snapshot";
+    }
 
     if ("launchQueue" in window) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -126,6 +138,7 @@ function App() {
       updateEditorContent("");
       updatePendingChangeStatus(true);
       setEndOfLine(defaultEndOfLine);
+      history.pushState(null, "", "/app");
     });
   }
 
@@ -148,12 +161,12 @@ function App() {
         "plaintext";
       setLanguage(language);
       updateEditorContent(content);
-      const endOfLine = content.match(/\r\n/) ? "CRLF" : "LF";
-      setEndOfLine(endOfLine);
+      updateEOLBasedOnContent(content);
       setTimeout(() => {
         updatePendingChangeStatus(false);
       });
       document.title = file.name;
+      history.pushState(null, "", "/app");
     });
   }
 
@@ -181,6 +194,11 @@ function App() {
     notifyIfAnyPendingChanges(() => {
       window.close();
     });
+  }
+
+  function updateEOLBasedOnContent(content?: string) {
+    const endOfLine = content?.match(/\r\n/) ? "CRLF" : "LF";
+    setEndOfLine(endOfLine);
   }
 
   function updateEditorContent(content: string) {
@@ -227,6 +245,21 @@ function App() {
     );
 
     mousetrap.prototype.stopCallback = () => false;
+  }
+
+  function generateSnapshotURL() {
+    const content = editorElement.current?.editor?.getValue();
+    if (!content) {
+      return;
+    }
+    const base64 = textToBase64(content);
+    const url = new URL(
+      `/app?snapshot=1&language=${language}&value=${encodeURIComponent(
+        base64
+      )}`,
+      location.origin
+    );
+    return url.href;
   }
 
   function renderTopBar() {
@@ -462,8 +495,30 @@ function App() {
                 </MenuTrigger>
                 <MenuPopover>
                   <MenuList>
-                    <MenuItem icon={<CopyRegular />}>Copy</MenuItem>
-                    <MenuItem icon={<ShareRegular />} disabled>
+                    <MenuItem
+                      icon={<CopyRegular />}
+                      onClick={() => {
+                        const url = generateSnapshotURL();
+                        if (!url) {
+                          alert("Failed to generate snapshot");
+                          return;
+                        }
+                        navigator.clipboard.writeText(url);
+                      }}
+                    >
+                      Copy
+                    </MenuItem>
+                    <MenuItem
+                      icon={<ShareRegular />}
+                      disabled={!navigator.share}
+                      onClick={() =>
+                        navigator.share?.({
+                          title: fileHandle?.name ?? "PWA Notepad",
+                          text: `PWA Notepad snapshot.`,
+                          url: generateSnapshotURL(),
+                        })
+                      }
+                    >
                       System Share
                     </MenuItem>
                   </MenuList>
