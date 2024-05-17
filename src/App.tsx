@@ -37,9 +37,21 @@ import {
 import { MonacoEditor } from "@hey-web-components/monaco-editor/react";
 import { HeyMonacoEditor } from "@hey-web-components/monaco-editor";
 import * as monaco from "monaco-editor";
+import mousetrap from "mousetrap";
 import { getTheme } from "./utils/theme";
 
 import "./App.css";
+
+let fileHandle: FileSystemFileHandle | undefined = undefined;
+let hasChangePending = false;
+function updatePendingChangeStatus(value: boolean) {
+  hasChangePending = value;
+  if (value) {
+    document.title = `${fileHandle?.name ?? "Untitled"} *`;
+  } else {
+    document.title = fileHandle?.name ?? "Untitled";
+  }
+}
 
 function App() {
   const [showLineNumbers, setShowLineNumbers] = React.useState(true);
@@ -58,6 +70,28 @@ function App() {
   const editorElement = useRef<HeyMonacoEditor>(null);
 
   useEffect(() => {
+    window.addEventListener("beforeunload", (event) => {
+      if (hasChangePending) {
+        event.preventDefault();
+      }
+    });
+
+    if ("launchQueue" in window) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any)["launchQueue"].setConsumer((launchParams: any) => {
+        if (launchParams.files?.length > 0) {
+          for (const fileHandle of launchParams.files) {
+            openFile(fileHandle);
+          }
+        }
+      });
+    }
+
+    addKeyboardShortcuts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     editorElement.current?.editor?.getModel()?.setEOL(endOfLine);
   }, [endOfLine]);
 
@@ -68,10 +102,116 @@ function App() {
       <div className="main-container">
         {renderTopBar()}
         {renderEditor()}
-        {renderBottomar()}
+        {renderBottomBar()}
       </div>
     </FluentProvider>
   );
+
+  function createNew() {
+    notifyIfAnyPendingChanges(async () => {
+      fileHandle = void 0;
+      updateEditorContent("");
+      updatePendingChangeStatus(true);
+    });
+  }
+
+  async function openFile(_fileHandle?: FileSystemFileHandle) {
+    notifyIfAnyPendingChanges(async () => {
+      fileHandle =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        _fileHandle ?? (await (window as any).showOpenFilePicker())?.[0];
+      if (!fileHandle) {
+        return;
+      }
+      const file = await fileHandle.getFile();
+      const extension = file.name.split(".").slice(1).pop() ?? "";
+      const content = await file.text();
+      const languages = monaco.languages.getLanguages();
+      const language =
+        languages.find((lang) => lang.mimetypes?.includes(file.type))?.id ??
+        languages.find((lang) => lang.extensions?.includes(`.${extension}`))
+          ?.id ??
+        "plaintext";
+      setLanguage(language);
+      updateEditorContent(content);
+      setTimeout(() => {
+        updatePendingChangeStatus(false);
+      });
+      document.title = file.name;
+    });
+  }
+
+  async function saveFile(saveAs = false) {
+    if (!fileHandle || saveAs) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      fileHandle = await (window as any).showSaveFilePicker({
+        types: [
+          {
+            description: "Text Files",
+            accept: {
+              "text/plain": [".txt"],
+            },
+          },
+        ],
+      });
+    }
+    const writable = await fileHandle?.createWritable();
+    await writable?.write(editorElement.current?.value ?? "");
+    await writable?.close();
+    updatePendingChangeStatus(false);
+  }
+
+  function exit() {
+    notifyIfAnyPendingChanges(() => {
+      window.close();
+    });
+  }
+
+  function updateEditorContent(content: string) {
+    if (!editorElement.current) {
+      return;
+    }
+    editorElement.current.value = content;
+  }
+
+  async function notifyIfAnyPendingChanges(continueCallback?: () => void) {
+    if (hasChangePending) {
+      const confirmed = await window.confirm(
+        "You have unsaved changes. Are you sure you want to leave?"
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+    continueCallback?.();
+  }
+
+  function addKeyboardShortcuts() {
+    function executeKeyboardAction(
+      event: mousetrap.ExtendedKeyboardEvent,
+      shortcutHandler: () => void
+    ) {
+      event.preventDefault();
+      shortcutHandler();
+    }
+
+    mousetrap.bind(["ctrl+n", "command+n"], (event) =>
+      executeKeyboardAction(event, () => createNew())
+    );
+    mousetrap.bind(["ctrl+o", "command+o"], (event) =>
+      executeKeyboardAction(event, () => openFile())
+    );
+    mousetrap.bind(["ctrl+s", "command+s"], (event) =>
+      executeKeyboardAction(event, function () {
+        saveFile();
+      })
+    );
+    mousetrap.bind(["ctrl+shift+s", "command+shift+s"], (event) =>
+      executeKeyboardAction(event, () => saveFile(true))
+    );
+
+    mousetrap.prototype.stopCallback = () => false;
+  }
 
   function renderTopBar() {
     return (
@@ -85,27 +225,40 @@ function App() {
               <MenuItem
                 icon={<DocumentAddRegular />}
                 secondaryContent="Ctrl + N"
+                onClick={() => createNew()}
               >
                 New
               </MenuItem>
               <MenuItem
                 icon={<DocumentArrowUpRegular />}
                 secondaryContent="Ctrl + O"
+                onClick={async () => {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const fileHandle = await (window as any).showOpenFilePicker();
+                  openFile(fileHandle[0]);
+                }}
               >
                 Open
               </MenuItem>
               <MenuDivider />
-              <MenuItem icon={<SaveRegular />} secondaryContent="Ctrl + S">
+              <MenuItem
+                icon={<SaveRegular />}
+                secondaryContent="Ctrl + S"
+                onClick={() => saveFile()}
+              >
                 Save
               </MenuItem>
               <MenuItem
                 icon={<SaveEditRegular />}
                 secondaryContent="Ctrl + Shift + S"
+                onClick={() => saveFile(true)}
               >
                 Save As
               </MenuItem>
               <MenuDivider />
-              <MenuItem icon={<ArrowExitRegular />}>Exit</MenuItem>
+              <MenuItem icon={<ArrowExitRegular />} onClick={() => exit()}>
+                Exit
+              </MenuItem>
             </MenuList>
           </MenuPopover>
         </Menu>
@@ -233,7 +386,18 @@ function App() {
           lineNumbers: showLineNumbers ? "on" : "off",
           minimap: { enabled: showMinimap },
         }}
+        onDrop={async (event) => {
+          event.preventDefault();
+          for (const item of event.dataTransfer.items) {
+            if (item.kind === "file") {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const fileHandle = await (item as any).getAsFileSystemHandle();
+              await openFile(fileHandle);
+            }
+          }
+        }}
         ondidChangeModelContent={() => {
+          updatePendingChangeStatus(true);
           setLinesCount(
             editorElement.current?.editor?.getModel()?.getLineCount()
           );
@@ -255,7 +419,7 @@ function App() {
     );
   }
 
-  function renderBottomar() {
+  function renderBottomBar() {
     return (
       <Toolbar>
         <span>
