@@ -579,9 +579,9 @@ function App() {
           </MenuTrigger>
           <MenuPopover>
             <MenuList checkedValues={{ encoding: ["utf8"] }}>
-              <MenuItemRadio name="encoding" value="ansi">
+              {/* <MenuItemRadio name="encoding" value="ansi">
                 ANSI
-              </MenuItemRadio>
+              </MenuItemRadio> */}
               <MenuItemRadio name="encoding" value="utf8">
                 UTF-8
               </MenuItemRadio>
