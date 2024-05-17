@@ -588,12 +588,12 @@ function App() {
   function renderBottomBar() {
     return (
       <Toolbar>
-        <span>
+        <span className="non-interactive">
           Ln {cursorPosition?.lineNumber ?? Number.NaN}, Col{" "}
           {cursorPosition?.column ?? Number.NaN}
         </span>
         <ToolbarDivider />
-        <span>
+        <span className="non-interactive">
           {characterCount ?? Number.NaN} characters, {linesCount ?? Number.NaN}{" "}
           lines
         </span>
