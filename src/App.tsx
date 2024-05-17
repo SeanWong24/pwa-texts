@@ -287,36 +287,87 @@ function App() {
               <MenuItem
                 icon={<ArrowUndoRegular />}
                 secondaryContent={"Ctrl + Z"}
+                onClick={() => {
+                  editorElement.current?.editor?.trigger(null, "undo", null);
+                }}
               >
                 Undo
               </MenuItem>
               <MenuItem
                 icon={<ArrowRedoRegular />}
                 secondaryContent={"Ctrl + Y"}
-                disabled
+                onClick={() => {
+                  editorElement.current?.editor?.trigger(null, "redo", null);
+                }}
               >
                 Redo
               </MenuItem>
-              <MenuDivider />
-              <MenuItem icon={<CutRegular />} secondaryContent={"Ctrl + X"}>
+              {/* TODO figure out how to make this work properly */}
+              {/* <MenuDivider />
+              <MenuItem
+                icon={<CutRegular />}
+                secondaryContent={"Ctrl + X"}
+                onClick={() => {
+                  editorElement.current?.editor?.trigger(
+                    "source",
+                    "editor.action.clipboardCutAction",
+                    null
+                  );
+                }}
+              >
                 Cut
               </MenuItem>
-              <MenuItem icon={<CopyRegular />} secondaryContent={"Ctrl + C"}>
+              <MenuItem
+                icon={<CopyRegular />}
+                secondaryContent={"Ctrl + C"}
+                onClick={() => {
+                  editorElement.current?.editor?.trigger(
+                    "source",
+                    "editor.action.clipboardCopyAction",
+                    null
+                  );
+                }}
+              >
                 Copy
               </MenuItem>
               <MenuItem
                 icon={<ClipboardPasteRegular />}
                 secondaryContent={"Ctrl + V"}
+                onClick={() => {
+                  editorElement.current?.focus();
+                  editorElement.current?.editor?.trigger(
+                    "source",
+                    "editor.action.clipboardPasteAction",
+                    null
+                  );
+                }}
               >
                 Paste
-              </MenuItem>
+              </MenuItem> */}
               <MenuDivider />
-              <MenuItem icon={<SearchRegular />} secondaryContent={"Ctrl + F"}>
+              <MenuItem
+                icon={<SearchRegular />}
+                secondaryContent={"Ctrl + F"}
+                onClick={() => {
+                  editorElement.current?.editor?.trigger(
+                    null,
+                    "actions.find",
+                    null
+                  );
+                }}
+              >
                 Find
               </MenuItem>
               <MenuItem
                 icon={<ArrowSwapRegular />}
                 secondaryContent={"Ctrl + H"}
+                onClick={() => {
+                  editorElement.current?.editor?.trigger(
+                    null,
+                    "editor.action.startFindReplaceAction",
+                    null
+                  );
+                }}
               >
                 Replace
               </MenuItem>
