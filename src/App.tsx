@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import {
+  AppsListRegular,
   ArrowEnterLeftRegular,
   ArrowExitRegular,
   ArrowRedoRegular,
@@ -470,6 +471,21 @@ function App() {
                 }
               }}
             >
+              <MenuItem
+                icon={<AppsListRegular />}
+                secondaryContent="F1"
+                onClick={() => {
+                  editorElement.current?.editor?.focus();
+                  editorElement.current?.editor?.trigger(
+                    null,
+                    "editor.action.quickCommand",
+                    null
+                  );
+                }}
+              >
+                Command Palette
+              </MenuItem>
+              <MenuDivider />
               <MenuItemCheckbox
                 icon={<TextNumberListLtrRegular />}
                 name="view"
