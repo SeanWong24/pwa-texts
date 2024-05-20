@@ -211,6 +211,7 @@ function App() {
       setLanguage(language);
       preventingMarkChangePendingNextTime = true;
       updateEditorContent(content);
+      preventingMarkChangePendingNextTime = true;
       updateEOLBasedOnContent(content);
       title = file.name;
     });
@@ -248,13 +249,11 @@ function App() {
   }
 
   function updateEditorContent(content: string) {
-    setTimeout(() => {
-      if (!editorElement.current) {
-        return;
-      }
-      // editorElement.current.editor?.getModel()?.setValue(content);
-      editorElement.current.value = content;
-    });
+    if (!editorElement.current) {
+      return;
+    }
+    // editorElement.current.editor?.getModel()?.setValue(content);
+    editorElement.current.value = content;
   }
 
   async function notifyIfAnyPendingChanges(continueCallback?: () => void) {
