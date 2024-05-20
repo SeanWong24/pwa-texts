@@ -65,9 +65,27 @@ function updatePendingChangeStatus(value: boolean) {
   }
 }
 
+function initialAppData() {
+  if (!localStorage.getItem("showLineNumbers")) {
+    localStorage.setItem("showLineNumbers", "true");
+  }
+  if (!localStorage.getItem("showMinimap")) {
+    localStorage.setItem("showMinimap", "true");
+  }
+  if (!localStorage.getItem("defualtEndOfLine")) {
+    localStorage.setItem("defualtEndOfLine", "LF");
+  }
+}
+
+initialAppData();
+
 function App() {
-  const [showLineNumbers, setShowLineNumbers] = React.useState(true);
-  const [showMinimap, setShowMinimap] = React.useState(true);
+  const [showLineNumbers, setShowLineNumbers] = React.useState(
+    localStorage.getItem("showLineNumbers") === "true"
+  );
+  const [showMinimap, setShowMinimap] = React.useState(
+    localStorage.getItem("showMinimap") === "true"
+  );
   const [supportedLanguages, setSupportedLanguages] =
     React.useState<monaco.languages.ILanguageExtensionPoint[]>();
   const [defaultEndOfLine, setDefualtEndOfLine] = React.useState<EOL>(
@@ -113,6 +131,14 @@ function App() {
     addKeyboardShortcuts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("showLineNumbers", showLineNumbers.toString());
+  }, [showLineNumbers]);
+
+  useEffect(() => {
+    localStorage.setItem("showMinimap", showMinimap.toString());
+  }, [showMinimap]);
 
   useEffect(() => {
     localStorage.setItem("defualtEndOfLine", defaultEndOfLine);
