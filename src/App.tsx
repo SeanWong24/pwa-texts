@@ -13,6 +13,7 @@ import {
   // CutRegular,
   DocumentAddRegular,
   DocumentArrowUpRegular,
+  DualScreenVerticalScrollRegular,
   TextBulletListSquareRegular,
   TextNumberListLtrRegular,
   SaveEditRegular,
@@ -72,6 +73,9 @@ function initialAppData() {
   if (!localStorage.getItem("showMinimap")) {
     localStorage.setItem("showMinimap", "true");
   }
+  if (!localStorage.getItem("stickyScrollEnabled")) {
+    localStorage.setItem("stickyScrollEnabled", "true");
+  }
   if (!localStorage.getItem("defualtEndOfLine")) {
     localStorage.setItem("defualtEndOfLine", "LF");
   }
@@ -85,6 +89,9 @@ function App() {
   );
   const [showMinimap, setShowMinimap] = React.useState(
     localStorage.getItem("showMinimap") === "true"
+  );
+  const [stickyScrollEnabled, setStickyScrollEnabled] = React.useState(
+    localStorage.getItem("stickyScrollEnabled") === "true"
   );
   const [supportedLanguages, setSupportedLanguages] =
     React.useState<monaco.languages.ILanguageExtensionPoint[]>();
@@ -139,6 +146,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem("showMinimap", showMinimap.toString());
   }, [showMinimap]);
+
+  useEffect(() => {
+    localStorage.setItem("stickyScrollEnabled", stickyScrollEnabled.toString());
+  }, [stickyScrollEnabled]);
 
   useEffect(() => {
     localStorage.setItem("defualtEndOfLine", defaultEndOfLine);
@@ -482,6 +493,7 @@ function App() {
                 view: [
                   ...(showLineNumbers ? ["showLineNumbers"] : []),
                   ...(showMinimap ? ["showMinimap"] : []),
+                  ...(stickyScrollEnabled ? ["stickyScrollEnabled"] : []),
                 ],
               }}
               onCheckedValueChange={(_e, { name, checkedItems }) => {
@@ -492,6 +504,11 @@ function App() {
                     );
                     setShowMinimap(
                       !!checkedItems?.find((item) => item === "showMinimap")
+                    );
+                    setStickyScrollEnabled(
+                      !!checkedItems?.find(
+                        (item) => item === "stickyScrollEnabled"
+                      )
                     );
                     break;
                 }
@@ -525,6 +542,13 @@ function App() {
                 value="showMinimap"
               >
                 Show Minimap
+              </MenuItemCheckbox>
+              <MenuItemCheckbox
+                icon={<DualScreenVerticalScrollRegular />}
+                name="view"
+                value="stickyScrollEnabled"
+              >
+                Enable Sticky Scroll
               </MenuItemCheckbox>
             </MenuList>
           </MenuPopover>
@@ -589,6 +613,7 @@ function App() {
           theme: getTheme() === "dark" ? "vs-dark" : "vs",
           lineNumbers: showLineNumbers ? "on" : "off",
           minimap: { enabled: showMinimap },
+          stickyScroll: { enabled: stickyScrollEnabled },
         }}
         onDrop={async (event) => {
           event.preventDefault();
