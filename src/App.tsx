@@ -130,6 +130,7 @@ function App() {
         if (launchParams.files?.length > 0) {
           for (const fileHandle of launchParams.files) {
             openFile(fileHandle);
+            break;
           }
         }
       });
