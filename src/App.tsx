@@ -67,11 +67,11 @@ function updatePendingChangeStatus(value: boolean) {
 }
 
 function initialAppData() {
-  if (!localStorage.getItem("showLineNumbers")) {
-    localStorage.setItem("showLineNumbers", "true");
+  if (!localStorage.getItem("lineNumbersEnabled")) {
+    localStorage.setItem("lineNumbersEnabled", "true");
   }
-  if (!localStorage.getItem("showMinimap")) {
-    localStorage.setItem("showMinimap", "true");
+  if (!localStorage.getItem("minimapEnabled")) {
+    localStorage.setItem("minimapEnabled", "true");
   }
   if (!localStorage.getItem("stickyScrollEnabled")) {
     localStorage.setItem("stickyScrollEnabled", "true");
@@ -84,11 +84,11 @@ function initialAppData() {
 initialAppData();
 
 function App() {
-  const [showLineNumbers, setShowLineNumbers] = React.useState(
-    localStorage.getItem("showLineNumbers") === "true"
+  const [lineNumbersEnabled, setLineNumbersEnabled] = React.useState(
+    localStorage.getItem("lineNumbersEnabled") === "true"
   );
-  const [showMinimap, setShowMinimap] = React.useState(
-    localStorage.getItem("showMinimap") === "true"
+  const [minimapEnabled, setMinimapEnabled] = React.useState(
+    localStorage.getItem("minimapEnabled") === "true"
   );
   const [stickyScrollEnabled, setStickyScrollEnabled] = React.useState(
     localStorage.getItem("stickyScrollEnabled") === "true"
@@ -140,12 +140,12 @@ function App() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("showLineNumbers", showLineNumbers.toString());
-  }, [showLineNumbers]);
+    localStorage.setItem("lineNumbersEnabled", lineNumbersEnabled.toString());
+  }, [lineNumbersEnabled]);
 
   useEffect(() => {
-    localStorage.setItem("showMinimap", showMinimap.toString());
-  }, [showMinimap]);
+    localStorage.setItem("minimapEnabled", minimapEnabled.toString());
+  }, [minimapEnabled]);
 
   useEffect(() => {
     localStorage.setItem("stickyScrollEnabled", stickyScrollEnabled.toString());
@@ -491,19 +491,21 @@ function App() {
             <MenuList
               checkedValues={{
                 view: [
-                  ...(showLineNumbers ? ["showLineNumbers"] : []),
-                  ...(showMinimap ? ["showMinimap"] : []),
+                  ...(lineNumbersEnabled ? ["lineNumbersEnabled"] : []),
+                  ...(minimapEnabled ? ["minimapEnabled"] : []),
                   ...(stickyScrollEnabled ? ["stickyScrollEnabled"] : []),
                 ],
               }}
               onCheckedValueChange={(_e, { name, checkedItems }) => {
                 switch (name) {
                   case "view":
-                    setShowLineNumbers(
-                      !!checkedItems?.find((item) => item === "showLineNumbers")
+                    setLineNumbersEnabled(
+                      !!checkedItems?.find(
+                        (item) => item === "lineNumbersEnabled"
+                      )
                     );
-                    setShowMinimap(
-                      !!checkedItems?.find((item) => item === "showMinimap")
+                    setMinimapEnabled(
+                      !!checkedItems?.find((item) => item === "minimapEnabled")
                     );
                     setStickyScrollEnabled(
                       !!checkedItems?.find(
@@ -532,14 +534,14 @@ function App() {
               <MenuItemCheckbox
                 icon={<TextNumberListLtrRegular />}
                 name="view"
-                value="showLineNumbers"
+                value="lineNumbersEnabled"
               >
                 Show Line Numbers
               </MenuItemCheckbox>
               <MenuItemCheckbox
                 icon={<TextBulletListSquareRegular />}
                 name="view"
-                value="showMinimap"
+                value="minimapEnabled"
               >
                 Show Minimap
               </MenuItemCheckbox>
@@ -611,8 +613,8 @@ function App() {
         language={language}
         options={{
           theme: getTheme() === "dark" ? "vs-dark" : "vs",
-          lineNumbers: showLineNumbers ? "on" : "off",
-          minimap: { enabled: showMinimap },
+          lineNumbers: lineNumbersEnabled ? "on" : "off",
+          minimap: { enabled: minimapEnabled },
           stickyScroll: { enabled: stickyScrollEnabled },
         }}
         onDrop={async (event) => {
