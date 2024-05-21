@@ -114,28 +114,6 @@ function App() {
       }
     });
 
-    if (searchParams.get("snapshot")) {
-      const language = searchParams.get("language") ?? "plaintext";
-      const value = base64ToText(searchParams.get("value") ?? "");
-      setLanguage(language);
-      preventingMarkChangePendingNextTime = true;
-      updateEditorContent(value);
-      updateEOLBasedOnContent(value);
-      title = "Snapshot";
-    }
-
-    if ("launchQueue" in window) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any)["launchQueue"].setConsumer((launchParams: any) => {
-        if (launchParams.files?.length > 0) {
-          for (const fileHandle of launchParams.files) {
-            openFile(fileHandle);
-            break;
-          }
-        }
-      });
-    }
-
     addKeyboardShortcuts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -651,6 +629,28 @@ function App() {
                 endOfLine as keyof typeof monaco.editor.EndOfLineSequence
               ]
             );
+
+          if (searchParams.get("snapshot")) {
+            const language = searchParams.get("language") ?? "plaintext";
+            const value = base64ToText(searchParams.get("value") ?? "");
+            setLanguage(language);
+            preventingMarkChangePendingNextTime = true;
+            updateEditorContent(value);
+            updateEOLBasedOnContent(value);
+            title = "Snapshot";
+          }
+
+          if ("launchQueue" in window) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (window as any)["launchQueue"].setConsumer((launchParams: any) => {
+              if (launchParams.files?.length > 0) {
+                for (const fileHandle of launchParams.files) {
+                  openFile(fileHandle);
+                  break;
+                }
+              }
+            });
+          }
         }}
       ></MonacoEditor>
     );
