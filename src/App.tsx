@@ -14,6 +14,7 @@ import {
   DocumentAddRegular,
   DocumentArrowUpRegular,
   DualScreenVerticalScrollRegular,
+  MoreHorizontalRegular,
   TextBulletListSquareRegular,
   TextNumberListLtrRegular,
   SaveEditRegular,
@@ -45,7 +46,7 @@ import { getTheme } from "./utils/theme";
 import { base64ToText, textToBase64 } from "./utils/snapshot";
 
 import "./App.css";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 type EOL = "LF" | "CRLF";
 
@@ -104,6 +105,7 @@ function App() {
   const [characterCount, setCharacterCount] = React.useState<number>();
   const [linesCount, setLinesCount] = React.useState<number>();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const editorElement = useRef<HeyMonacoEditor>(null);
 
@@ -148,7 +150,7 @@ function App() {
     <FluentProvider
       theme={getTheme() === "dark" ? webDarkTheme : webLightTheme}
     >
-      <div className="main-container">
+      <div className="app-container">
         {renderTopBar()}
         {renderEditor()}
         {renderBottomBar()}
@@ -530,6 +532,23 @@ function App() {
               >
                 Enable Sticky Scroll
               </MenuItemCheckbox>
+              <MenuDivider />
+              <Menu>
+                <MenuTrigger disableButtonEnhancement>
+                  <MenuItem icon={<MoreHorizontalRegular />}>More fun</MenuItem>
+                </MenuTrigger>
+                <MenuPopover>
+                  <MenuList>
+                    <MenuItem
+                      onClick={() => {
+                        navigate("/playground");
+                      }}
+                    >
+                      HTML/CSS/JS Playground
+                    </MenuItem>
+                  </MenuList>
+                </MenuPopover>
+              </Menu>
             </MenuList>
           </MenuPopover>
         </Menu>

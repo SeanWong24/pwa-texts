@@ -1,0 +1,41 @@
+.playground-container {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  height: 100vh;
+  gap: 5px;
+  padding: 5px;
+
+  .panel {
+    height: 100%;
+    width: 100%;
+  }
+
+  .coding-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 5px;
+
+    .card {
+      height: 100%;
+      width: 100%;
+      border: 1px solid gray;
+      border-radius: 5px;
+      overflow: hidden;
+
+      h1 {
+        padding: 0 10px;
+      }
+    }
+  }
+
+  .preview-panel {
+    border-radius: 5px;
+    overflow: hidden;
+
+    iframe {
+      height: 100%;
+      width: 100%;
+      border: none;
+    }
+  }
+}
