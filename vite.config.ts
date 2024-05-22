@@ -15,7 +15,6 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         globPatterns: [
           "**/*.{js,css,html}",
-          "**/*.{jpg,jpeg,png,svg}",
           "**/*.{ttf,woff,woff2}",
         ],
       },
