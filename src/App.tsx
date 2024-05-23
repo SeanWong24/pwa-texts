@@ -146,6 +146,8 @@ function App() {
       );
   }, [endOfLine]);
 
+  webLightTheme.colorNeutralBackground1 = "#dbdbdb";
+
   return (
     <FluentProvider
       theme={getTheme() === "dark" ? webDarkTheme : webLightTheme}
