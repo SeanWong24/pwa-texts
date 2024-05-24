@@ -692,7 +692,7 @@ function App() {
         <ToolbarDivider />
         <Menu>
           <MenuTrigger>
-            <ToolbarButton aria-label="File">{endOfLine}</ToolbarButton>
+            <MenuItem>{endOfLine}</MenuItem>
           </MenuTrigger>
           <MenuPopover>
             <MenuList
@@ -726,7 +726,7 @@ function App() {
         <ToolbarDivider />
         <Menu>
           <MenuTrigger>
-            <ToolbarButton aria-label="File">UTF-8</ToolbarButton>
+            <MenuItem>UTF-8</MenuItem>
           </MenuTrigger>
           <MenuPopover>
             <MenuList checkedValues={{ encoding: ["utf8"] }}>
@@ -742,10 +742,10 @@ function App() {
         <ToolbarDivider />
         <Menu>
           <MenuTrigger>
-            <ToolbarButton aria-label="File">
+            <MenuItem>
               {supportedLanguages?.find(({ id }) => id === language)
                 ?.aliases?.[0] ?? language}
-            </ToolbarButton>
+            </MenuItem>
           </MenuTrigger>
           <MenuPopover>
             <MenuList
