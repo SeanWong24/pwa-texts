@@ -13,10 +13,7 @@ export default defineConfig({
       },
       workbox: {
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-        globPatterns: [
-          "**/*.{js,css,html}",
-          "**/*.{ttf,woff,woff2}",
-        ],
+        globPatterns: ["**/*.{js,css,html}", "**/*.{ttf,woff,woff2}"],
       },
       manifest: {
         name: "PWA Notepad",
@@ -27,8 +24,9 @@ export default defineConfig({
         icons: [
           {
             src: "./icon192.png",
-            sizes: "192x192",
+            sizes: "144x144 192x192",
             type: "image/png",
+            purpose: "any maskable",
           },
           {
             src: "./icon512.png",
