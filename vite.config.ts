@@ -21,6 +21,13 @@ export default defineConfig({
         start_url: "/",
         theme_color: "#000000",
         background_color: "#ffffff",
+        shortcuts: [
+          {
+            name: "HTML/CSS/JS Playground",
+            short_name: "Playground",
+            url: "/playground",
+          },
+        ],
         icons: [
           {
             src: "./icon192.png",
