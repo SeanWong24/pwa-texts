@@ -635,7 +635,6 @@ function App() {
         }}
         oneditorInitialized={({ detail: { editor } }) => {
           setSupportedLanguages(monaco.languages.getLanguages());
-          editor = editor as monaco.editor.IStandaloneCodeEditor | undefined; // TODO temp fix
           setCursorPosition(editor?.getPosition() ?? void 0);
           editor?.onDidChangeCursorPosition((event) => {
             setCursorPosition(event.position);

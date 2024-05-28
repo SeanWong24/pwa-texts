@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@fluentui/react-components": "^9.51.0",
-    "@hey-web-components/monaco-editor": "^0.5.0-pre",
+    "@hey-web-components/monaco-editor": "^0.5.0-pre6",
     "mousetrap": "^1.6.5",
     "pako": "^2.1.0",
     "react": "^18.2.0",
