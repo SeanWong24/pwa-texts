@@ -522,14 +522,14 @@ function App({ snapshot = false }: AppProps) {
                 name="view"
                 value="lineNumbersEnabled"
               >
-                Show Line Numbers
+                Enable Line Numbers
               </MenuItemCheckbox>
               <MenuItemCheckbox
                 icon={<TextBulletListSquareRegular />}
                 name="view"
                 value="minimapEnabled"
               >
-                Show Minimap
+                Enable Minimap
               </MenuItemCheckbox>
               <MenuItemCheckbox
                 icon={<DualScreenVerticalScrollRegular />}
