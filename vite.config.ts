@@ -18,7 +18,7 @@ export default defineConfig({
       manifest: {
         name: "PWA Notepad",
         short_name: "PWANotepad",
-        start_url: "/",
+        start_url: "/app",
         theme_color: "#000000",
         background_color: "#ffffff",
         shortcuts: [
@@ -43,7 +43,7 @@ export default defineConfig({
         ],
         file_handlers: [
           {
-            action: "/",
+            action: "/app",
             accept: {
               "text/*": [
                 ".txt",

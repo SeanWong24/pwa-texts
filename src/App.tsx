@@ -48,6 +48,10 @@ import { base64ToText, textToBase64 } from "./utils/snapshot";
 import "./App.css";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
+type AppProps = {
+  snapshot?: boolean;
+};
+
 type EOL = "LF" | "CRLF";
 
 let fileHandle: FileSystemFileHandle | undefined = undefined;
@@ -84,7 +88,7 @@ function initialAppData() {
 
 initialAppData();
 
-function App() {
+function App({ snapshot = false }: AppProps) {
   const [lineNumbersEnabled, setLineNumbersEnabled] = React.useState(
     localStorage.getItem("lineNumbersEnabled") === "true"
   );
@@ -284,7 +288,7 @@ function App() {
     }
     const base64 = textToBase64(content);
     const url = new URL(
-      `/?snapshot=1&language=${language}&value=${encodeURIComponent(base64)}`,
+      `/app/snapshot?language=${language}&value=${encodeURIComponent(base64)}`,
       location.origin
     );
     return url.href;
@@ -650,7 +654,7 @@ function App() {
               ]
             );
 
-          if (searchParams.get("snapshot")) {
+          if (snapshot) {
             const language = searchParams.get("language") ?? "plaintext";
             const value = base64ToText(searchParams.get("value") ?? "");
             setLanguage(language);
