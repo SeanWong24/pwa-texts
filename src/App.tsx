@@ -138,6 +138,11 @@ function App({ snapshot = false }: AppProps) {
   }, [language]);
 
   useEffect(() => {
+    updatePreview(editorElement.current?.value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [previewEnabled]);
+
+  useEffect(() => {
     localStorage.setItem("lineNumbersEnabled", lineNumbersEnabled.toString());
   }, [lineNumbersEnabled]);
 
