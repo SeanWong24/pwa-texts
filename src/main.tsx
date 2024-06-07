@@ -5,6 +5,7 @@ import {
   createBrowserRouter,
 } from "react-router-dom";
 import App from "./App.tsx";
+import Diff from "./Diff.tsx";
 import Playground from "./Playground.tsx";
 
 import "./index.css";
@@ -20,7 +21,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/app/snapshot",
-    element: <App snapshot/>,
+    element: <App snapshot />,
+  },
+  {
+    path: "/diff",
+    element: <Diff />,
   },
   {
     path: "/playground",

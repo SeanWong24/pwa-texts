@@ -36,7 +36,6 @@ import {
   MenuItemRadio,
   FluentProvider,
   webDarkTheme,
-  webLightTheme,
 } from "@fluentui/react-components";
 import { MonacoEditor } from "@hey-web-components/monaco-editor/react";
 import { HeyMonacoEditor } from "@hey-web-components/monaco-editor";
@@ -44,9 +43,10 @@ import * as monaco from "monaco-editor";
 import mousetrap from "mousetrap";
 import { getTheme } from "./utils/theme";
 import { base64ToText, textToBase64 } from "./utils/snapshot";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { modifiedFluentLightTheme } from "./utils/modified-fluent-light-theme";
 
 import "./App.css";
-import { useNavigate, useSearchParams } from "react-router-dom";
 
 type AppProps = {
   snapshot?: boolean;
@@ -150,11 +150,9 @@ function App({ snapshot = false }: AppProps) {
       );
   }, [endOfLine]);
 
-  webLightTheme.colorNeutralBackground1 = "#dbdbdb";
-
   return (
     <FluentProvider
-      theme={getTheme() === "dark" ? webDarkTheme : webLightTheme}
+      theme={getTheme() === "dark" ? webDarkTheme : modifiedFluentLightTheme}
     >
       <div className="app-container">
         {renderTopBar()}
@@ -541,10 +539,22 @@ function App({ snapshot = false }: AppProps) {
               <MenuDivider />
               <Menu>
                 <MenuTrigger disableButtonEnhancement>
-                  <MenuItem icon={<MoreHorizontalRegular />}>More fun</MenuItem>
+                  <MenuItem icon={<MoreHorizontalRegular />}>More Fun</MenuItem>
                 </MenuTrigger>
                 <MenuPopover>
                   <MenuList>
+                    <MenuItem
+                      onClick={() => {
+                        navigate("/diff", {
+                          state: {
+                            original: editorElement.current?.value ?? "",
+                            language: language,
+                          },
+                        });
+                      }}
+                    >
+                      Quick Diff
+                    </MenuItem>
                     <MenuItem
                       onClick={() => {
                         navigate("/playground");
