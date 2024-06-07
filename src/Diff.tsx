@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import * as monaco from "monaco-editor";
 import { MonacoDiffEditor } from "@hey-web-components/monaco-editor/react";
 import { getTheme } from "./utils/theme";
@@ -27,6 +27,10 @@ function Playground() {
   const [language, setLanguage] = React.useState(
     location?.state?.language ?? "plaintext"
   );
+
+  useEffect(() => {
+    alert("You can replace content in the right panel to see the diff.");
+  }, []);
 
   return (
     <FluentProvider
@@ -67,6 +71,7 @@ function Playground() {
           <MonacoDiffEditor
             original={location.state?.original}
             originalLanguage={language}
+            modified={location.state?.original}
             modifiedLanguage={language}
             options={{ theme: theme === "dark" ? "vs-dark" : "vs" }}
             oneditorInitialized={() => {
