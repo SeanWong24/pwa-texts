@@ -296,7 +296,7 @@ function App({ snapshot = false }: AppProps) {
 
   function renderTopBar() {
     return (
-      <Toolbar aria-label="Default">
+      <Toolbar>
         <Menu>
           <MenuTrigger>
             <ToolbarButton>File</ToolbarButton>
