@@ -16,8 +16,8 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html}", "**/*.{ttf,woff,woff2}"],
       },
       manifest: {
-        name: "PWA Notepad",
-        short_name: "PWANotepad",
+        name: "Texts",
+        short_name: "Texts",
         start_url: "/app",
         theme_color: "#000000",
         background_color: "#ffffff",

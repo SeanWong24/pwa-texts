@@ -1,3 +1,3 @@
-# PWA Notepad
+# Texts
 
-A PWA Notepad.
+A PWA text editor.
