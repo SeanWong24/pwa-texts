@@ -15,6 +15,7 @@ import {
   DocumentArrowUpRegular,
   DualScreenVerticalScrollRegular,
   MoreHorizontalRegular,
+  PanelRightRegular,
   TextBulletListSquareRegular,
   TextNumberListLtrRegular,
   SaveEditRegular,
@@ -41,10 +42,12 @@ import { MonacoEditor } from "@hey-web-components/monaco-editor/react";
 import { HeyMonacoEditor } from "@hey-web-components/monaco-editor";
 import * as monaco from "monaco-editor";
 import mousetrap from "mousetrap";
+import { marked } from "marked";
 import { getTheme } from "./utils/theme";
 import { base64ToText, textToBase64 } from "./utils/snapshot";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { modifiedFluentLightTheme } from "./utils/modified-fluent-light-theme";
+import markdownAirStyleUrl from "markdown-air/css/air.css?url";
 
 import "./App.css";
 
@@ -53,6 +56,8 @@ type AppProps = {
 };
 
 type EOL = "LF" | "CRLF";
+
+const LANGUAGES_SUPPORTING_PREVIEW = ["markdown"];
 
 let fileHandle: FileSystemFileHandle | undefined = undefined;
 let title: string | undefined;
@@ -108,10 +113,12 @@ function App({ snapshot = false }: AppProps) {
   const [cursorPosition, setCursorPosition] = React.useState<monaco.Position>();
   const [characterCount, setCharacterCount] = React.useState<number>();
   const [linesCount, setLinesCount] = React.useState<number>();
+  const [previewEnabled, setPreviewEnabled] = React.useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const editorElement = useRef<HeyMonacoEditor>(null);
+  const previewElement = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     window.addEventListener("beforeunload", (event) => {
@@ -123,6 +130,12 @@ function App({ snapshot = false }: AppProps) {
     addKeyboardShortcuts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!LANGUAGES_SUPPORTING_PREVIEW.includes(language)) {
+      setPreviewEnabled(false);
+    }
+  }, [language]);
 
   useEffect(() => {
     localStorage.setItem("lineNumbersEnabled", lineNumbersEnabled.toString());
@@ -156,7 +169,10 @@ function App({ snapshot = false }: AppProps) {
     >
       <div className="app-container">
         {renderTopBar()}
-        {renderEditor()}
+        <div className="content-container">
+          {renderEditor()}
+          {renderPreview()}
+        </div>
         {renderBottomBar()}
       </div>
     </FluentProvider>
@@ -290,6 +306,28 @@ function App({ snapshot = false }: AppProps) {
       location.origin
     );
     return url.href;
+  }
+
+  function updatePreview(content?: string) {
+    if (previewEnabled) {
+      if (language === "markdown") {
+        const doc = previewElement.current?.contentDocument;
+        if (!doc) {
+          return;
+        }
+        const docContent = /*html*/ `
+        <html>
+        <head>
+        <link rel="stylesheet" href="${markdownAirStyleUrl}">
+        </head>
+        <body>${marked.parse(content ?? "")}</body>
+        </html>
+        `;
+        doc.open();
+        doc.write(docContent);
+        doc.close();
+      }
+    }
   }
 
   function renderTopBar() {
@@ -478,6 +516,7 @@ function App({ snapshot = false }: AppProps) {
                   ...(lineNumbersEnabled ? ["lineNumbersEnabled"] : []),
                   ...(minimapEnabled ? ["minimapEnabled"] : []),
                   ...(stickyScrollEnabled ? ["stickyScrollEnabled"] : []),
+                  ...(previewEnabled ? ["previewEnabled"] : []),
                 ],
               }}
               onCheckedValueChange={(_e, { name, checkedItems }) => {
@@ -495,6 +534,9 @@ function App({ snapshot = false }: AppProps) {
                       !!checkedItems?.find(
                         (item) => item === "stickyScrollEnabled"
                       )
+                    );
+                    setPreviewEnabled(
+                      !!checkedItems?.find((item) => item === "previewEnabled")
                     );
                     break;
                 }
@@ -536,6 +578,18 @@ function App({ snapshot = false }: AppProps) {
               >
                 Enable Sticky Scroll
               </MenuItemCheckbox>
+              {LANGUAGES_SUPPORTING_PREVIEW.includes(language) ? (
+                <>
+                  <MenuDivider />
+                  <MenuItemCheckbox
+                    icon={<PanelRightRegular />}
+                    name="view"
+                    value="previewEnabled"
+                  >
+                    Enable Preview Panel
+                  </MenuItemCheckbox>
+                </>
+              ) : null}
               <MenuDivider />
               <Menu>
                 <MenuTrigger disableButtonEnhancement>
@@ -645,7 +699,10 @@ function App({ snapshot = false }: AppProps) {
           setLinesCount(
             editorElement.current?.editor?.getModel()?.getLineCount()
           );
-          setCharacterCount(editorElement.current?.editor?.getValue().length);
+
+          const currentValue = editorElement.current?.value;
+          setCharacterCount(currentValue?.length);
+          updatePreview(currentValue);
         }}
         oneditorInitialized={({ detail: { editor } }) => {
           setSupportedLanguages(monaco.languages.getLanguages());
@@ -688,6 +745,12 @@ function App({ snapshot = false }: AppProps) {
         }}
       ></MonacoEditor>
     );
+  }
+
+  function renderPreview() {
+    if (previewEnabled) {
+      return <iframe ref={previewElement}></iframe>;
+    }
   }
 
   function renderBottomBar() {
