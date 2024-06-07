@@ -57,7 +57,7 @@ type AppProps = {
 
 type EOL = "LF" | "CRLF";
 
-const LANGUAGES_SUPPORTING_PREVIEW = ["markdown"];
+const LANGUAGES_SUPPORTING_PREVIEW = ["html", "markdown"];
 
 let fileHandle: FileSystemFileHandle | undefined = undefined;
 let title: string | undefined;
@@ -315,7 +315,15 @@ function App({ snapshot = false }: AppProps) {
 
   function updatePreview(content?: string) {
     if (previewEnabled) {
-      if (language === "markdown") {
+      if (language == "html") {
+        const doc = previewElement.current?.contentDocument;
+        if (!doc) {
+          return;
+        }
+        doc.open();
+        doc.write(content ?? "");
+        doc.close();
+      } else if (language === "markdown") {
         const doc = previewElement.current?.contentDocument;
         if (!doc) {
           return;
