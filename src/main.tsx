@@ -24,6 +24,10 @@ const router = createBrowserRouter([
     element: <App snapshot />,
   },
   {
+    path: "/app/embed",
+    element: <App embedded />,
+  },
+  {
     path: "/diff",
     element: <Diff />,
   },

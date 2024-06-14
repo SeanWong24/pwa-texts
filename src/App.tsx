@@ -53,6 +53,7 @@ import "./App.css";
 
 type AppProps = {
   snapshot?: boolean;
+  embedded?: boolean;
 };
 
 type EOL = "LF" | "CRLF";
@@ -93,7 +94,7 @@ function initialAppData() {
 
 initialAppData();
 
-function App({ snapshot = false }: AppProps) {
+function App({ snapshot = false, embedded = false }: AppProps) {
   const [lineNumbersEnabled, setLineNumbersEnabled] = React.useState(
     localStorage.getItem("lineNumbersEnabled") === "true"
   );
@@ -110,6 +111,7 @@ function App({ snapshot = false }: AppProps) {
   );
   const [endOfLine, setEndOfLine] = React.useState<EOL>(defaultEndOfLine);
   const [language, setLanguage] = React.useState("plaintext");
+  const [readOnly, setReadOnly] = React.useState(false);
   const [cursorPosition, setCursorPosition] = React.useState<monaco.Position>();
   const [characterCount, setCharacterCount] = React.useState<number>();
   const [linesCount, setLinesCount] = React.useState<number>();
@@ -173,12 +175,12 @@ function App({ snapshot = false }: AppProps) {
       theme={getTheme() === "dark" ? webDarkTheme : modifiedFluentLightTheme}
     >
       <div className="app-container">
-        {renderTopBar()}
+        {embedded ? null : renderTopBar()}
         <div className="content-container">
           {renderEditor()}
-          {renderPreview()}
+          {embedded ? null : renderPreview()}
         </div>
-        {renderBottomBar()}
+        {embedded ? null : renderBottomBar()}
       </div>
     </FluentProvider>
   );
@@ -308,6 +310,21 @@ function App({ snapshot = false }: AppProps) {
     const base64 = textToBase64(content);
     const url = new URL(
       `/app/snapshot?language=${language}&value=${encodeURIComponent(base64)}`,
+      location.origin
+    );
+    return url.href;
+  }
+
+  function generateEmbeddableURL(readonly = false) {
+    const content = editorElement.current?.editor?.getValue();
+    if (!content) {
+      return;
+    }
+    const base64 = textToBase64(content);
+    const url = new URL(
+      `/app/embed?language=${language}&value=${encodeURIComponent(base64)}${
+        readonly ? "&readonly=1" : ""
+      }`,
       location.origin
     );
     return url.href;
@@ -676,8 +693,19 @@ function App({ snapshot = false }: AppProps) {
                   </MenuList>
                 </MenuPopover>
               </Menu>
-              <MenuItem icon={<CodeRegular />} disabled>
-                Embed
+              <MenuItem
+                icon={<CodeRegular />}
+                onClick={() => {
+                  const readonly = confirm("Do you want to make it readonly?");
+                  const url = generateEmbeddableURL(readonly);
+                  if (!url) {
+                    alert("Failed to generate snapshot");
+                    return;
+                  }
+                  navigator.clipboard.writeText(url);
+                }}
+              >
+                Copy Embeddable URL
               </MenuItem>
             </MenuList>
           </MenuPopover>
@@ -696,6 +724,7 @@ function App({ snapshot = false }: AppProps) {
           lineNumbers: lineNumbersEnabled ? "on" : "off",
           minimap: { enabled: minimapEnabled },
           stickyScroll: { enabled: stickyScrollEnabled },
+          readOnly: readOnly,
         }}
         onDrop={async (event) => {
           event.preventDefault();
@@ -734,14 +763,20 @@ function App({ snapshot = false }: AppProps) {
               ]
             );
 
-          if (snapshot) {
+          if (snapshot || embedded) {
             const language = searchParams.get("language") ?? "plaintext";
             const value = base64ToText(searchParams.get("value") ?? "");
             setLanguage(language);
             preventingMarkChangePendingNextTime = true;
             updateEditorContent(value);
             updateEOLBasedOnContent(value);
-            title = "Snapshot";
+            if (snapshot) {
+              title = "Snapshot";
+            }
+            if (embedded) {
+              setReadOnly(!!searchParams.get("readonly"));
+              title = "Embedded";
+            }
           }
 
           if ("launchQueue" in window) {
