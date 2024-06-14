@@ -673,6 +673,7 @@ function App({ snapshot = false, embedded = false }: AppProps) {
                           return;
                         }
                         navigator.clipboard.writeText(url);
+                        alert("Copied to clipboard.");
                       }}
                     >
                       Copy
@@ -703,6 +704,9 @@ function App({ snapshot = false, embedded = false }: AppProps) {
                     return;
                   }
                   navigator.clipboard.writeText(url);
+                  alert(
+                    "Copied to clipboard. You can use it as src of an iframe."
+                  );
                 }}
               >
                 Copy Embeddable URL
