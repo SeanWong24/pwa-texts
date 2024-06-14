@@ -37,6 +37,7 @@ import {
   MenuItemRadio,
   FluentProvider,
   webDarkTheme,
+  useUncontrolledFocus,
 } from "@fluentui/react-components";
 import { MonacoEditor } from "@hey-web-components/monaco-editor/react";
 import { HeyMonacoEditor } from "@hey-web-components/monaco-editor";
@@ -118,6 +119,7 @@ function App({ snapshot = false, embedded = false }: AppProps) {
   const [previewEnabled, setPreviewEnabled] = React.useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const uncontrolledFocus = useUncontrolledFocus();
 
   const editorElement = useRef<HeyMonacoEditor>(null);
   const previewElement = useRef<HTMLIFrameElement>(null);
@@ -176,7 +178,7 @@ function App({ snapshot = false, embedded = false }: AppProps) {
     >
       <div className="app-container">
         {embedded ? null : renderTopBar()}
-        <div className="content-container">
+        <div className="content-container" {...uncontrolledFocus}>
           {renderEditor()}
           {embedded ? null : renderPreview()}
         </div>
