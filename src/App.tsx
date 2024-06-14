@@ -682,8 +682,8 @@ function App({ snapshot = false, embedded = false }: AppProps) {
                       disabled={!navigator.share}
                       onClick={() =>
                         navigator.share?.({
-                          title: fileHandle?.name ?? "PWA Notepad",
-                          text: `PWA Notepad snapshot.`,
+                          title: fileHandle?.name ?? "Texts",
+                          text: `Texts snapshot.`,
                           url: generateSnapshotURL(),
                         })
                       }
