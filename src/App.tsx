@@ -170,17 +170,19 @@ function App({ snapshot = false, embedded = false }: AppProps) {
       );
   }, [endOfLine]);
 
-  return (
+  return embedded ? (
+    renderEditor()
+  ) : (
     <FluentProvider
       theme={getTheme() === "dark" ? webDarkTheme : modifiedFluentLightTheme}
     >
       <div className="app-container">
-        {embedded ? null : renderTopBar()}
+        {renderTopBar()}
         <div className="content-container" {...uncontrolledFocus}>
           {renderEditor()}
-          {embedded ? null : renderPreview()}
+          {renderPreview()}
         </div>
-        {embedded ? null : renderBottomBar()}
+        {renderBottomBar()}
       </div>
     </FluentProvider>
   );
