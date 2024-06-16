@@ -7,10 +7,8 @@ import {
   ArrowSwapRegular,
   ArrowUndoRegular,
   CameraRegular,
-  // ClipboardPasteRegular,
   CodeRegular,
   CopyRegular,
-  // CutRegular,
   DocumentAddRegular,
   DocumentArrowUpRegular,
   DualScreenVerticalScrollRegular,
@@ -262,7 +260,6 @@ function App({ snapshot = false, embedded = false }: AppProps) {
     if (!editorElement.current) {
       return;
     }
-    // editorElement.current.editor?.getModel()?.setValue(content);
     editorElement.current.value = content;
   }
 
@@ -432,48 +429,7 @@ function App({ snapshot = false, embedded = false }: AppProps) {
               >
                 Redo
               </MenuItem>
-              {/* TODO figure out how to make this work properly */}
-              {/* <MenuDivider />
-              <MenuItem
-                icon={<CutRegular />}
-                secondaryContent={"Ctrl + X"}
-                onClick={() => {
-                  editorElement.current?.editor?.trigger(
-                    "source",
-                    "editor.action.clipboardCutAction",
-                    null
-                  );
-                }}
-              >
-                Cut
-              </MenuItem>
-              <MenuItem
-                icon={<CopyRegular />}
-                secondaryContent={"Ctrl + C"}
-                onClick={() => {
-                  editorElement.current?.editor?.trigger(
-                    "source",
-                    "editor.action.clipboardCopyAction",
-                    null
-                  );
-                }}
-              >
-                Copy
-              </MenuItem>
-              <MenuItem
-                icon={<ClipboardPasteRegular />}
-                secondaryContent={"Ctrl + V"}
-                onClick={() => {
-                  editorElement.current?.focus();
-                  editorElement.current?.editor?.trigger(
-                    "source",
-                    "editor.action.clipboardPasteAction",
-                    null
-                  );
-                }}
-              >
-                Paste
-              </MenuItem> */}
+              {/* TODO figure out how to make cut/copy/paste work properly */}
               <MenuDivider />
               <MenuItem
                 icon={<SearchRegular />}
