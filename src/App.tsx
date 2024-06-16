@@ -248,6 +248,7 @@ function App({ snapshot = false, embedded = false }: AppProps) {
 
   function exit() {
     notifyIfAnyPendingChanges(() => {
+      window.open(location.href, "_self", "");
       window.close();
     });
   }
