@@ -171,7 +171,7 @@ function App({ snapshot = false, embedded = false }: AppProps) {
   }, [endOfLine]);
 
   return embedded ? (
-    renderEditor()
+    <div className="app-container">{renderEditor()}</div>
   ) : (
     <FluentProvider
       theme={getTheme() === "dark" ? webDarkTheme : modifiedFluentLightTheme}
