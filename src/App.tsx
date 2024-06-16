@@ -246,7 +246,6 @@ function App({ snapshot = false, embedded = false }: AppProps) {
 
   function exit() {
     notifyIfAnyPendingChanges(() => {
-      window.open(location.href, "_self", "");
       window.close();
     });
   }
@@ -398,10 +397,14 @@ function App({ snapshot = false, embedded = false }: AppProps) {
               >
                 Save As
               </MenuItem>
-              <MenuDivider />
-              <MenuItem icon={<ArrowExitRegular />} onClick={() => exit()}>
-                Exit
-              </MenuItem>
+              {history.length <= 1 ? (
+                <>
+                  <MenuDivider />
+                  <MenuItem icon={<ArrowExitRegular />} onClick={() => exit()}>
+                    Exit
+                  </MenuItem>
+                </>
+              ) : null}
             </MenuList>
           </MenuPopover>
         </Menu>
