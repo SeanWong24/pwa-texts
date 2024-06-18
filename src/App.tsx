@@ -55,6 +55,13 @@ type AppProps = {
   embedded?: boolean;
 };
 
+type EmbedProps = {
+  readonly?: boolean;
+  lineNumbers?: boolean;
+  minimap?: boolean;
+  stickyScroll?: boolean;
+};
+
 type EOL = "LF" | "CRLF";
 
 const LANGUAGES_SUPPORTING_PREVIEW = ["html", "markdown"];
@@ -316,7 +323,12 @@ function App({ snapshot = false, embedded = false }: AppProps) {
     return url.href;
   }
 
-  function generateEmbeddableURL(readonly = false) {
+  function generateEmbeddableURL({
+    readonly,
+    lineNumbers,
+    minimap,
+    stickyScroll,
+  }: EmbedProps) {
     const content = editorElement.current?.editor?.getValue();
     if (!content) {
       return;
@@ -325,6 +337,8 @@ function App({ snapshot = false, embedded = false }: AppProps) {
     const url = new URL(
       `/app/embed?language=${language}&value=${encodeURIComponent(base64)}${
         readonly ? "&readonly=1" : ""
+      }${lineNumbers ? "&lineNumbers=1" : ""}${minimap ? "&minimap=1" : ""}${
+        stickyScroll ? "&stickyScroll=1" : ""
       }`,
       location.origin
     );
@@ -662,7 +676,19 @@ function App({ snapshot = false, embedded = false }: AppProps) {
                 icon={<CodeRegular />}
                 onClick={() => {
                   const readonly = confirm("Do you want to make it readonly?");
-                  const url = generateEmbeddableURL(readonly);
+                  const lineNumbers = confirm(
+                    "Do you want to show line numbers?"
+                  );
+                  const minimap = confirm("Do you want to enable minimap?");
+                  const stickyScroll = confirm(
+                    "Do you want to enable sticky scroll?"
+                  );
+                  const url = generateEmbeddableURL({
+                    readonly,
+                    lineNumbers,
+                    minimap,
+                    stickyScroll,
+                  });
                   if (!url) {
                     alert("Failed to generate snapshot");
                     return;
@@ -743,6 +769,9 @@ function App({ snapshot = false, embedded = false }: AppProps) {
             }
             if (embedded) {
               setReadOnly(!!searchParams.get("readonly"));
+              setLineNumbersEnabled(!!searchParams.get("lineNumbers"));
+              setMinimapEnabled(!!searchParams.get("minimap"));
+              setStickyScrollEnabled(!!searchParams.get("stickScroll"));
               title = "Embedded";
             }
           }
