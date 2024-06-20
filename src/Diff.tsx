@@ -29,7 +29,9 @@ function Playground() {
   );
 
   useEffect(() => {
-    alert("You can replace content in the right panel to see the diff.");
+    setTimeout(() => {
+      alert("You can replace content in the right panel to see the diff.");
+    });
   }, []);
 
   return (
