@@ -651,7 +651,10 @@ function App({ snapshot = false, embedded = false }: AppProps) {
                           return;
                         }
                         navigator.clipboard.writeText(url);
-                        alert("Copied to clipboard.");
+                        prompt(
+                          "Copied to clipboard. You can also manually copy the snapshot URL from below.",
+                          url
+                        );
                       }}
                     >
                       Copy
@@ -694,8 +697,9 @@ function App({ snapshot = false, embedded = false }: AppProps) {
                     return;
                   }
                   navigator.clipboard.writeText(url);
-                  alert(
-                    "Copied to clipboard. You can use it as src of an iframe."
+                  prompt(
+                    "Copied to clipboard. You can paste it in the src attribute of an iframe. You can also manually copy the embeddable URL from below.",
+                    url
                   );
                 }}
               >
