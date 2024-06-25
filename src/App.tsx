@@ -786,7 +786,6 @@ function App({ snapshot = false, embedded = false }: AppProps) {
               if (launchParams.files?.length > 0) {
                 for (const fileHandle of launchParams.files) {
                   openFile(fileHandle);
-                  break;
                 }
               }
             });
