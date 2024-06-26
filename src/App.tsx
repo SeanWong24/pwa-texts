@@ -42,13 +42,16 @@ import { MonacoEditor } from "@hey-web-components/monaco-editor/react";
 import { HeyMonacoEditor } from "@hey-web-components/monaco-editor";
 import * as monaco from "monaco-editor";
 import mousetrap from "mousetrap";
-import { marked } from "marked";
+import { Marked } from "marked";
+import { markedHighlight } from "marked-highlight";
+import hljs from "highlight.js";
 import { getTheme } from "./utils/theme";
 import { base64ToText, textToBase64 } from "./utils/snapshot";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { modifiedFluentLightTheme } from "./utils/modified-fluent-light-theme";
-import markdownAirStyleUrl from "markdown-air/css/air.css?url";
 
+import githubMarkdownStyleUrl from "github-markdown-css/github-markdown.css?url";
+import codeHighlightingStyleUrl from "highlight.js/styles/github.css?url";
 import "./App.css";
 
 type AppProps = {
@@ -64,6 +67,16 @@ type EmbedProps = {
 };
 
 type EOL = "LF" | "CRLF";
+
+const marked = new Marked(
+  markedHighlight({
+    langPrefix: "hljs language-",
+    highlight(code, lang) {
+      const language = hljs.getLanguage(lang) ? lang : "plaintext";
+      return hljs.highlight(code, { language }).value;
+    },
+  })
+);
 
 const LANGUAGES_SUPPORTING_PREVIEW = ["html", "markdown"];
 
@@ -364,9 +377,25 @@ function App({ snapshot = false, embedded = false }: AppProps) {
         const docContent = /*html*/ `
         <html>
         <head>
-        <link rel="stylesheet" href="${markdownAirStyleUrl}">
+        <link rel="stylesheet" href="${githubMarkdownStyleUrl}">
+        <link rel="stylesheet" href="${codeHighlightingStyleUrl}">
+        <style>
+          .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+          }
+
+          @media (max-width: 767px) {
+            .markdown-body {
+              padding: 15px;
+            }
+          }
+        </style>
         </head>
-        <body>${marked.parse(content ?? "")}</body>
+        <body class="markdown-body">${marked.parse(content ?? "", {})}</body>
         </html>
         `;
         doc.open();
