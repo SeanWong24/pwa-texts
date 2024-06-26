@@ -14,6 +14,7 @@ import {
   DualScreenVerticalScrollRegular,
   MoreHorizontalRegular,
   PanelRightRegular,
+  PlayRegular,
   TextBulletListSquareRegular,
   TextNumberListLtrRegular,
   SaveEditRegular,
@@ -596,6 +597,65 @@ function App({ snapshot = false, embedded = false }: AppProps) {
                   >
                     Enable Preview Panel
                   </MenuItemCheckbox>
+                </>
+              ) : null}
+              {language === "javascript" ? (
+                <>
+                  <MenuDivider />
+                  <MenuItem
+                    icon={<PlayRegular />}
+                    onClick={() => {
+                      const newWindow = window.open();
+                      if (!newWindow) {
+                        return;
+                      }
+                      const iframe = newWindow.document.createElement("iframe");
+                      iframe.setAttribute("sandbox", "allow-scripts");
+                      iframe.style.position = "absolute";
+                      iframe.style.inset = "0";
+                      iframe.height = "100%";
+                      iframe.width = "100%";
+                      iframe.style.border = "none";
+                      iframe.srcdoc = /* html */ `
+                      <style>
+                      :root {
+                        font-family: Arial, Helvetica, sans-serif;
+                      }
+                      </style>
+                      <script defer>
+                        console.log = (str) => {
+                          setTimeout(() => {
+                            const p = document.createElement("p");
+                            p.innerHTML = str;
+                            document.body.append(p);
+                          })
+                        }
+                        console.warn = (str) => {
+                          setTimeout(() => {
+                            const p = document.createElement("p");
+                            p.style.color = "yellow";
+                            p.innerHTML = str;
+                            document.body.append(p);
+                          })
+                        }
+                        console.error = (str) => {
+                          setTimeout(() => {
+                            const p = document.createElement("p");
+                            p.style.color = "red";
+                            p.innerHTML = str;
+                            document.body.append(p);
+                          })
+                        }
+                      </script>
+                      <script>
+                      ${editorElement.current?.value ?? ""}
+                      </script>
+                      `;
+                      newWindow.document.body.append(iframe);
+                    }}
+                  >
+                    Run Code
+                  </MenuItem>
                 </>
               ) : null}
               <MenuDivider />
