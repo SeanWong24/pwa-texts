@@ -37,6 +37,9 @@ import {
   FluentProvider,
   webDarkTheme,
   useUncontrolledFocus,
+  ToolbarGroup,
+  makeStyles,
+  ToolbarToggleButton,
 } from "@fluentui/react-components";
 import { MonacoEditor } from "@hey-web-components/monaco-editor/react";
 import { HeyMonacoEditor } from "@hey-web-components/monaco-editor";
@@ -77,6 +80,12 @@ const marked = new Marked(
     },
   })
 );
+
+const useToolbarFarGroupStyles = makeStyles({
+  toolbar: {
+    justifyContent: "space-between",
+  },
+});
 
 const LANGUAGES_SUPPORTING_PREVIEW = ["html", "markdown"];
 
@@ -142,6 +151,8 @@ function App({ snapshot = false, embedded = false }: AppProps) {
 
   const editorElement = useRef<HeyMonacoEditor>(null);
   const previewElement = useRef<HTMLIFrameElement>(null);
+
+  const toolbarFarGroupStyles = useToolbarFarGroupStyles();
 
   useEffect(() => {
     window.addEventListener("beforeunload", (event) => {
@@ -407,396 +418,411 @@ function App({ snapshot = false, embedded = false }: AppProps) {
 
   function renderTopBar() {
     return (
-      <Toolbar>
-        <Menu>
-          <MenuTrigger>
-            <ToolbarButton>File</ToolbarButton>
-          </MenuTrigger>
-          <MenuPopover>
-            <MenuList>
-              <MenuItem
-                icon={<DocumentAddRegular />}
-                secondaryContent="Ctrl + N"
-                onClick={() => createNew()}
-              >
-                New
-              </MenuItem>
-              <MenuItem
-                icon={<DocumentArrowUpRegular />}
-                secondaryContent="Ctrl + O"
-                onClick={async () => openFile()}
-              >
-                Open
-              </MenuItem>
-              <MenuDivider />
-              <MenuItem
-                icon={<SaveRegular />}
-                secondaryContent="Ctrl + S"
-                onClick={() => saveFile()}
-              >
-                Save
-              </MenuItem>
-              <MenuItem
-                icon={<SaveEditRegular />}
-                secondaryContent="Ctrl + Shift + S"
-                onClick={() => saveFile(true)}
-              >
-                Save As
-              </MenuItem>
-              {history.length <= 1 ? (
-                <>
-                  <MenuDivider />
-                  <MenuItem icon={<ArrowExitRegular />} onClick={() => exit()}>
-                    Exit
-                  </MenuItem>
-                </>
-              ) : null}
-            </MenuList>
-          </MenuPopover>
-        </Menu>
-        <Menu>
-          <MenuTrigger>
-            <ToolbarButton>Edit</ToolbarButton>
-          </MenuTrigger>
-          <MenuPopover>
-            <MenuList>
-              <MenuItem
-                icon={<ArrowUndoRegular />}
-                secondaryContent={"Ctrl + Z"}
-                onClick={() => {
-                  editorElement.current?.editor?.trigger(null, "undo", null);
-                }}
-              >
-                Undo
-              </MenuItem>
-              <MenuItem
-                icon={<ArrowRedoRegular />}
-                secondaryContent={"Ctrl + Y"}
-                onClick={() => {
-                  editorElement.current?.editor?.trigger(null, "redo", null);
-                }}
-              >
-                Redo
-              </MenuItem>
-              {/* TODO figure out how to make cut/copy/paste work properly */}
-              <MenuDivider />
-              <MenuItem
-                icon={<SearchRegular />}
-                secondaryContent={"Ctrl + F"}
-                onClick={() => {
-                  editorElement.current?.editor?.trigger(
-                    null,
-                    "actions.find",
-                    null
-                  );
-                }}
-              >
-                Find
-              </MenuItem>
-              <MenuItem
-                icon={<ArrowSwapRegular />}
-                secondaryContent={"Ctrl + H"}
-                onClick={() => {
-                  editorElement.current?.editor?.trigger(
-                    null,
-                    "editor.action.startFindReplaceAction",
-                    null
-                  );
-                }}
-              >
-                Replace
-              </MenuItem>
-              <MenuDivider />
-              <Menu>
-                <MenuTrigger disableButtonEnhancement>
-                  <MenuItem icon={<ArrowEnterLeftRegular />}>
-                    Default End Of Line
-                  </MenuItem>
-                </MenuTrigger>
-                <MenuPopover>
-                  <MenuList
-                    checkedValues={{
-                      defaultEndOfLine: [defaultEndOfLine],
-                    }}
-                  >
-                    <MenuItemRadio
-                      name="defaultEndOfLine"
-                      value="LF"
-                      onClick={() => {
-                        setDefualtEndOfLine("LF");
-                      }}
-                    >
-                      LF
-                    </MenuItemRadio>
-                    <MenuItemRadio
-                      name="defaultEndOfLine"
-                      value="CRLF"
-                      onClick={() => {
-                        setDefualtEndOfLine("CRLF");
-                      }}
-                    >
-                      CRLF
-                    </MenuItemRadio>
-                  </MenuList>
-                </MenuPopover>
-              </Menu>
-            </MenuList>
-          </MenuPopover>
-        </Menu>
-        <Menu>
-          <MenuTrigger>
-            <ToolbarButton>View</ToolbarButton>
-          </MenuTrigger>
-          <MenuPopover>
-            <MenuList
-              checkedValues={{
-                view: [
-                  ...(lineNumbersEnabled ? ["lineNumbersEnabled"] : []),
-                  ...(minimapEnabled ? ["minimapEnabled"] : []),
-                  ...(stickyScrollEnabled ? ["stickyScrollEnabled"] : []),
-                  ...(previewEnabled ? ["previewEnabled"] : []),
-                ],
-              }}
-              onCheckedValueChange={(_e, { name, checkedItems }) => {
-                switch (name) {
-                  case "view":
-                    setLineNumbersEnabled(
-                      !!checkedItems?.find(
-                        (item) => item === "lineNumbersEnabled"
-                      )
-                    );
-                    setMinimapEnabled(
-                      !!checkedItems?.find((item) => item === "minimapEnabled")
-                    );
-                    setStickyScrollEnabled(
-                      !!checkedItems?.find(
-                        (item) => item === "stickyScrollEnabled"
-                      )
-                    );
-                    setPreviewEnabled(
-                      !!checkedItems?.find((item) => item === "previewEnabled")
-                    );
-                    break;
-                }
-              }}
-            >
-              <MenuItem
-                icon={<AppsListRegular />}
-                secondaryContent="F1"
-                onClick={() => {
-                  editorElement.current?.editor?.focus();
-                  editorElement.current?.editor?.trigger(
-                    null,
-                    "editor.action.quickCommand",
-                    null
-                  );
-                }}
-              >
-                Command Palette
-              </MenuItem>
-              <MenuDivider />
-              <MenuItemCheckbox
-                icon={<TextNumberListLtrRegular />}
-                name="view"
-                value="lineNumbersEnabled"
-              >
-                Enable Line Numbers
-              </MenuItemCheckbox>
-              <MenuItemCheckbox
-                icon={<TextBulletListSquareRegular />}
-                name="view"
-                value="minimapEnabled"
-              >
-                Enable Minimap
-              </MenuItemCheckbox>
-              <MenuItemCheckbox
-                icon={<DualScreenVerticalScrollRegular />}
-                name="view"
-                value="stickyScrollEnabled"
-              >
-                Enable Sticky Scroll
-              </MenuItemCheckbox>
-              {LANGUAGES_SUPPORTING_PREVIEW.includes(language) ? (
-                <>
-                  <MenuDivider />
-                  <MenuItemCheckbox
-                    icon={<PanelRightRegular />}
-                    name="view"
-                    value="previewEnabled"
-                  >
-                    Enable Preview Panel
-                  </MenuItemCheckbox>
-                </>
-              ) : null}
-              {language === "javascript" ? (
-                <>
-                  <MenuDivider />
-                  <MenuItem
-                    icon={<PlayRegular />}
-                    onClick={() => {
-                      const newWindow = window.open();
-                      if (!newWindow) {
-                        return;
-                      }
-                      const iframe = newWindow.document.createElement("iframe");
-                      iframe.setAttribute("sandbox", "allow-scripts");
-                      iframe.style.position = "absolute";
-                      iframe.style.inset = "0";
-                      iframe.height = "100%";
-                      iframe.width = "100%";
-                      iframe.style.border = "none";
-                      iframe.srcdoc = /* html */ `
-                      <style>
-                      :root {
-                        font-family: Arial, Helvetica, sans-serif;
-                      }
-                      </style>
-                      <script defer>
-                        console.log = (str) => {
-                          setTimeout(() => {
-                            const p = document.createElement("p");
-                            p.innerHTML = str;
-                            document.body.append(p);
-                          })
-                        }
-                        console.warn = (str) => {
-                          setTimeout(() => {
-                            const p = document.createElement("p");
-                            p.style.color = "yellow";
-                            p.innerHTML = str;
-                            document.body.append(p);
-                          })
-                        }
-                        console.error = (str) => {
-                          setTimeout(() => {
-                            const p = document.createElement("p");
-                            p.style.color = "red";
-                            p.innerHTML = str;
-                            document.body.append(p);
-                          })
-                        }
-                      </script>
-                      <script>
-                      ${editorElement.current?.value ?? ""}
-                      </script>
-                      `;
-                      newWindow.document.body.append(iframe);
-                    }}
-                  >
-                    Run Code
-                  </MenuItem>
-                </>
-              ) : null}
-              <MenuDivider />
-              <Menu>
-                <MenuTrigger disableButtonEnhancement>
-                  <MenuItem icon={<MoreHorizontalRegular />}>More Fun</MenuItem>
-                </MenuTrigger>
-                <MenuPopover>
-                  <MenuList>
+      <Toolbar
+        className={toolbarFarGroupStyles.toolbar}
+        checkedValues={{
+          view: [...(previewEnabled ? ["previewEnabled"] : [])],
+        }}
+        onCheckedValueChange={(_e, { name, checkedItems }) => {
+          switch (name) {
+            case "view":
+              setPreviewEnabled(
+                !!checkedItems?.find((item) => item === "previewEnabled")
+              );
+              break;
+          }
+        }}
+      >
+        <ToolbarGroup>
+          <Menu>
+            <MenuTrigger>
+              <ToolbarButton>File</ToolbarButton>
+            </MenuTrigger>
+            <MenuPopover>
+              <MenuList>
+                <MenuItem
+                  icon={<DocumentAddRegular />}
+                  secondaryContent="Ctrl + N"
+                  onClick={() => createNew()}
+                >
+                  New
+                </MenuItem>
+                <MenuItem
+                  icon={<DocumentArrowUpRegular />}
+                  secondaryContent="Ctrl + O"
+                  onClick={async () => openFile()}
+                >
+                  Open
+                </MenuItem>
+                <MenuDivider />
+                <MenuItem
+                  icon={<SaveRegular />}
+                  secondaryContent="Ctrl + S"
+                  onClick={() => saveFile()}
+                >
+                  Save
+                </MenuItem>
+                <MenuItem
+                  icon={<SaveEditRegular />}
+                  secondaryContent="Ctrl + Shift + S"
+                  onClick={() => saveFile(true)}
+                >
+                  Save As
+                </MenuItem>
+                {history.length <= 1 ? (
+                  <>
+                    <MenuDivider />
                     <MenuItem
-                      onClick={() => {
-                        navigate("/diff", {
-                          state: {
-                            original: editorElement.current?.value ?? "",
-                            language: language,
-                          },
-                        });
+                      icon={<ArrowExitRegular />}
+                      onClick={() => exit()}
+                    >
+                      Exit
+                    </MenuItem>
+                  </>
+                ) : null}
+              </MenuList>
+            </MenuPopover>
+          </Menu>
+          <Menu>
+            <MenuTrigger>
+              <ToolbarButton>Edit</ToolbarButton>
+            </MenuTrigger>
+            <MenuPopover>
+              <MenuList>
+                <MenuItem
+                  icon={<ArrowUndoRegular />}
+                  secondaryContent={"Ctrl + Z"}
+                  onClick={() => {
+                    editorElement.current?.editor?.trigger(null, "undo", null);
+                  }}
+                >
+                  Undo
+                </MenuItem>
+                <MenuItem
+                  icon={<ArrowRedoRegular />}
+                  secondaryContent={"Ctrl + Y"}
+                  onClick={() => {
+                    editorElement.current?.editor?.trigger(null, "redo", null);
+                  }}
+                >
+                  Redo
+                </MenuItem>
+                {/* TODO figure out how to make cut/copy/paste work properly */}
+                <MenuDivider />
+                <MenuItem
+                  icon={<SearchRegular />}
+                  secondaryContent={"Ctrl + F"}
+                  onClick={() => {
+                    editorElement.current?.editor?.trigger(
+                      null,
+                      "actions.find",
+                      null
+                    );
+                  }}
+                >
+                  Find
+                </MenuItem>
+                <MenuItem
+                  icon={<ArrowSwapRegular />}
+                  secondaryContent={"Ctrl + H"}
+                  onClick={() => {
+                    editorElement.current?.editor?.trigger(
+                      null,
+                      "editor.action.startFindReplaceAction",
+                      null
+                    );
+                  }}
+                >
+                  Replace
+                </MenuItem>
+                <MenuDivider />
+                <Menu>
+                  <MenuTrigger disableButtonEnhancement>
+                    <MenuItem icon={<ArrowEnterLeftRegular />}>
+                      Default End Of Line
+                    </MenuItem>
+                  </MenuTrigger>
+                  <MenuPopover>
+                    <MenuList
+                      checkedValues={{
+                        defaultEndOfLine: [defaultEndOfLine],
                       }}
                     >
-                      Quick Diff
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => {
-                        navigate("/playground");
-                      }}
-                    >
-                      HTML/CSS/JS Playground
-                    </MenuItem>
-                  </MenuList>
-                </MenuPopover>
-              </Menu>
-            </MenuList>
-          </MenuPopover>
-        </Menu>
-        <Menu>
-          <MenuTrigger>
-            <ToolbarButton>Share</ToolbarButton>
-          </MenuTrigger>
-          <MenuPopover>
-            <MenuList>
-              <Menu>
-                <MenuTrigger disableButtonEnhancement>
-                  <MenuItem icon={<CameraRegular />}>Snapshot</MenuItem>
-                </MenuTrigger>
-                <MenuPopover>
-                  <MenuList>
-                    <MenuItem
-                      icon={<CopyRegular />}
-                      onClick={() => {
-                        const url = generateSnapshotURL();
-                        if (!url) {
-                          alert("Failed to generate snapshot");
-                          return;
-                        }
-                        navigator.clipboard.writeText(url);
-                        prompt(
-                          "Copied to clipboard. You can also manually copy the snapshot URL from below.",
-                          url
-                        );
-                      }}
-                    >
-                      Copy
-                    </MenuItem>
-                    <MenuItem
-                      icon={<ShareRegular />}
-                      disabled={!navigator.share}
-                      onClick={() =>
-                        navigator.share?.({
-                          title: fileHandle?.name ?? "Texts",
-                          text: `Texts snapshot.`,
-                          url: generateSnapshotURL(),
-                        })
-                      }
-                    >
-                      System Share
-                    </MenuItem>
-                  </MenuList>
-                </MenuPopover>
-              </Menu>
-              <MenuItem
-                icon={<CodeRegular />}
-                onClick={() => {
-                  const readonly = confirm("Do you want to make it readonly?");
-                  const lineNumbers = confirm(
-                    "Do you want to show line numbers?"
-                  );
-                  const minimap = confirm("Do you want to enable minimap?");
-                  const stickyScroll = confirm(
-                    "Do you want to enable sticky scroll?"
-                  );
-                  const url = generateEmbeddableURL({
-                    readonly,
-                    lineNumbers,
-                    minimap,
-                    stickyScroll,
-                  });
-                  if (!url) {
-                    alert("Failed to generate snapshot");
-                    return;
+                      <MenuItemRadio
+                        name="defaultEndOfLine"
+                        value="LF"
+                        onClick={() => {
+                          setDefualtEndOfLine("LF");
+                        }}
+                      >
+                        LF
+                      </MenuItemRadio>
+                      <MenuItemRadio
+                        name="defaultEndOfLine"
+                        value="CRLF"
+                        onClick={() => {
+                          setDefualtEndOfLine("CRLF");
+                        }}
+                      >
+                        CRLF
+                      </MenuItemRadio>
+                    </MenuList>
+                  </MenuPopover>
+                </Menu>
+              </MenuList>
+            </MenuPopover>
+          </Menu>
+          <Menu>
+            <MenuTrigger>
+              <ToolbarButton>View</ToolbarButton>
+            </MenuTrigger>
+            <MenuPopover>
+              <MenuList
+                checkedValues={{
+                  view: [
+                    ...(lineNumbersEnabled ? ["lineNumbersEnabled"] : []),
+                    ...(minimapEnabled ? ["minimapEnabled"] : []),
+                    ...(stickyScrollEnabled ? ["stickyScrollEnabled"] : []),
+                  ],
+                }}
+                onCheckedValueChange={(_e, { name, checkedItems }) => {
+                  switch (name) {
+                    case "view":
+                      setLineNumbersEnabled(
+                        !!checkedItems?.find(
+                          (item) => item === "lineNumbersEnabled"
+                        )
+                      );
+                      setMinimapEnabled(
+                        !!checkedItems?.find(
+                          (item) => item === "minimapEnabled"
+                        )
+                      );
+                      setStickyScrollEnabled(
+                        !!checkedItems?.find(
+                          (item) => item === "stickyScrollEnabled"
+                        )
+                      );
+                      break;
                   }
-                  navigator.clipboard.writeText(url);
-                  prompt(
-                    "Copied to clipboard. You can paste it in the src attribute of an iframe. You can also manually copy the embeddable URL from below.",
-                    url
-                  );
                 }}
               >
-                Copy Embeddable URL
-              </MenuItem>
-            </MenuList>
-          </MenuPopover>
-        </Menu>
+                <MenuItem
+                  icon={<AppsListRegular />}
+                  secondaryContent="F1"
+                  onClick={() => {
+                    editorElement.current?.editor?.focus();
+                    editorElement.current?.editor?.trigger(
+                      null,
+                      "editor.action.quickCommand",
+                      null
+                    );
+                  }}
+                >
+                  Command Palette
+                </MenuItem>
+                <MenuDivider />
+                <MenuItemCheckbox
+                  icon={<TextNumberListLtrRegular />}
+                  name="view"
+                  value="lineNumbersEnabled"
+                >
+                  Enable Line Numbers
+                </MenuItemCheckbox>
+                <MenuItemCheckbox
+                  icon={<TextBulletListSquareRegular />}
+                  name="view"
+                  value="minimapEnabled"
+                >
+                  Enable Minimap
+                </MenuItemCheckbox>
+                <MenuItemCheckbox
+                  icon={<DualScreenVerticalScrollRegular />}
+                  name="view"
+                  value="stickyScrollEnabled"
+                >
+                  Enable Sticky Scroll
+                </MenuItemCheckbox>
+                <MenuDivider />
+                <Menu>
+                  <MenuTrigger disableButtonEnhancement>
+                    <MenuItem icon={<MoreHorizontalRegular />}>
+                      More Fun
+                    </MenuItem>
+                  </MenuTrigger>
+                  <MenuPopover>
+                    <MenuList>
+                      <MenuItem
+                        onClick={() => {
+                          navigate("/diff", {
+                            state: {
+                              original: editorElement.current?.value ?? "",
+                              language: language,
+                            },
+                          });
+                        }}
+                      >
+                        Quick Diff
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => {
+                          navigate("/playground");
+                        }}
+                      >
+                        HTML/CSS/JS Playground
+                      </MenuItem>
+                    </MenuList>
+                  </MenuPopover>
+                </Menu>
+              </MenuList>
+            </MenuPopover>
+          </Menu>
+          <Menu>
+            <MenuTrigger>
+              <ToolbarButton>Share</ToolbarButton>
+            </MenuTrigger>
+            <MenuPopover>
+              <MenuList>
+                <Menu>
+                  <MenuTrigger disableButtonEnhancement>
+                    <MenuItem icon={<CameraRegular />}>Snapshot</MenuItem>
+                  </MenuTrigger>
+                  <MenuPopover>
+                    <MenuList>
+                      <MenuItem
+                        icon={<CopyRegular />}
+                        onClick={() => {
+                          const url = generateSnapshotURL();
+                          if (!url) {
+                            alert("Failed to generate snapshot");
+                            return;
+                          }
+                          navigator.clipboard.writeText(url);
+                          prompt(
+                            "Copied to clipboard. You can also manually copy the snapshot URL from below.",
+                            url
+                          );
+                        }}
+                      >
+                        Copy
+                      </MenuItem>
+                      <MenuItem
+                        icon={<ShareRegular />}
+                        disabled={!navigator.share}
+                        onClick={() =>
+                          navigator.share?.({
+                            title: fileHandle?.name ?? "Texts",
+                            text: `Texts snapshot.`,
+                            url: generateSnapshotURL(),
+                          })
+                        }
+                      >
+                        System Share
+                      </MenuItem>
+                    </MenuList>
+                  </MenuPopover>
+                </Menu>
+                <MenuItem
+                  icon={<CodeRegular />}
+                  onClick={() => {
+                    const readonly = confirm(
+                      "Do you want to make it readonly?"
+                    );
+                    const lineNumbers = confirm(
+                      "Do you want to show line numbers?"
+                    );
+                    const minimap = confirm("Do you want to enable minimap?");
+                    const stickyScroll = confirm(
+                      "Do you want to enable sticky scroll?"
+                    );
+                    const url = generateEmbeddableURL({
+                      readonly,
+                      lineNumbers,
+                      minimap,
+                      stickyScroll,
+                    });
+                    if (!url) {
+                      alert("Failed to generate snapshot");
+                      return;
+                    }
+                    navigator.clipboard.writeText(url);
+                    prompt(
+                      "Copied to clipboard. You can paste it in the src attribute of an iframe. You can also manually copy the embeddable URL from below.",
+                      url
+                    );
+                  }}
+                >
+                  Copy Embeddable URL
+                </MenuItem>
+              </MenuList>
+            </MenuPopover>
+          </Menu>
+        </ToolbarGroup>
+        <ToolbarGroup>
+          {LANGUAGES_SUPPORTING_PREVIEW.includes(language) ? (
+            <ToolbarToggleButton
+              icon={<PanelRightRegular />}
+              title="Toggle preview panel"
+              name="view"
+              value="previewEnabled"
+            ></ToolbarToggleButton>
+          ) : null}
+          {language === "javascript" ? (
+            <ToolbarButton
+              icon={<PlayRegular />}
+              title="Run Code"
+              onClick={() => {
+                const newWindow = window.open();
+                if (!newWindow) {
+                  return;
+                }
+                const iframe = newWindow.document.createElement("iframe");
+                iframe.setAttribute("sandbox", "allow-scripts");
+                iframe.style.position = "absolute";
+                iframe.style.inset = "0";
+                iframe.height = "100%";
+                iframe.width = "100%";
+                iframe.style.border = "none";
+                iframe.srcdoc = /* html */ `
+                <style>
+                :root {
+                  font-family: Arial, Helvetica, sans-serif;
+                }
+                </style>
+                <script defer>
+                  console.log = (str) => {
+                    setTimeout(() => {
+                      const p = document.createElement("p");
+                      p.innerHTML = str;
+                      document.body.append(p);
+                    })
+                  }
+                  console.warn = (str) => {
+                    setTimeout(() => {
+                      const p = document.createElement("p");
+                      p.style.color = "yellow";
+                      p.innerHTML = str;
+                      document.body.append(p);
+                    })
+                  }
+                  console.error = (str) => {
+                    setTimeout(() => {
+                      const p = document.createElement("p");
+                      p.style.color = "red";
+                      p.innerHTML = str;
+                      document.body.append(p);
+                    })
+                  }
+                </script>
+                <script>
+                ${editorElement.current?.value ?? ""}
+                </script>
+                `;
+                newWindow.document.body.append(iframe);
+              }}
+            ></ToolbarButton>
+          ) : null}
+        </ToolbarGroup>
       </Toolbar>
     );
   }
@@ -892,94 +918,97 @@ function App({ snapshot = false, embedded = false }: AppProps) {
 
   function renderBottomBar() {
     return (
-      <Toolbar>
-        <span className="non-interactive">
-          Ln {cursorPosition?.lineNumber ?? Number.NaN}, Col{" "}
-          {cursorPosition?.column ?? Number.NaN}
-        </span>
-        <ToolbarDivider />
-        <span className="non-interactive">
-          {characterCount ?? Number.NaN} characters, {linesCount ?? Number.NaN}{" "}
-          lines
-        </span>
-        <ToolbarDivider />
-        <Menu>
-          <MenuTrigger>
-            <MenuItem>{endOfLine}</MenuItem>
-          </MenuTrigger>
-          <MenuPopover>
-            <MenuList
-              checkedValues={{
-                endOfLine: [endOfLine],
-              }}
-              onCheckedValueChange={(_e, { name, checkedItems }) => {
-                switch (name) {
-                  case "endOfLine": {
-                    const value = checkedItems?.[0] as EOL | undefined;
-                    setEndOfLine(value ?? "LF");
-                    break;
+      <Toolbar className={toolbarFarGroupStyles.toolbar}>
+        <ToolbarGroup style={{ display: "flex" }}>
+          <span className="non-interactive">
+            Ln {cursorPosition?.lineNumber ?? Number.NaN}, Col{" "}
+            {cursorPosition?.column ?? Number.NaN}
+          </span>
+          <ToolbarDivider />
+          <span className="non-interactive">
+            {characterCount ?? Number.NaN} characters,{" "}
+            {linesCount ?? Number.NaN} lines
+          </span>
+        </ToolbarGroup>
+        <ToolbarGroup style={{ display: "flex" }}>
+          <Menu>
+            <MenuTrigger>
+              <MenuItem>{endOfLine}</MenuItem>
+            </MenuTrigger>
+            <MenuPopover>
+              <MenuList
+                checkedValues={{
+                  endOfLine: [endOfLine],
+                }}
+                onCheckedValueChange={(_e, { name, checkedItems }) => {
+                  switch (name) {
+                    case "endOfLine": {
+                      const value = checkedItems?.[0] as EOL | undefined;
+                      setEndOfLine(value ?? "LF");
+                      break;
+                    }
                   }
-                }
-              }}
-            >
-              {Object.values(monaco.editor.DefaultEndOfLine)
-                .filter((value) => typeof value === "string")
-                .map((value) => (
-                  <MenuItemRadio
-                    name="endOfLine"
-                    value={value as string}
-                    key={value}
-                  >
-                    {value}
-                  </MenuItemRadio>
-                ))}
-            </MenuList>
-          </MenuPopover>
-        </Menu>
-        <ToolbarDivider />
-        <Menu>
-          <MenuTrigger>
-            <MenuItem>UTF-8</MenuItem>
-          </MenuTrigger>
-          <MenuPopover>
-            <MenuList checkedValues={{ encoding: ["utf8"] }}>
-              {/* <MenuItemRadio name="encoding" value="ansi">
+                }}
+              >
+                {Object.values(monaco.editor.DefaultEndOfLine)
+                  .filter((value) => typeof value === "string")
+                  .map((value) => (
+                    <MenuItemRadio
+                      name="endOfLine"
+                      value={value as string}
+                      key={value}
+                    >
+                      {value}
+                    </MenuItemRadio>
+                  ))}
+              </MenuList>
+            </MenuPopover>
+          </Menu>
+          <ToolbarDivider />
+          <Menu>
+            <MenuTrigger>
+              <MenuItem>UTF-8</MenuItem>
+            </MenuTrigger>
+            <MenuPopover>
+              <MenuList checkedValues={{ encoding: ["utf8"] }}>
+                {/* <MenuItemRadio name="encoding" value="ansi">
                 ANSI
               </MenuItemRadio> */}
-              <MenuItemRadio name="encoding" value="utf8">
-                UTF-8
-              </MenuItemRadio>
-            </MenuList>
-          </MenuPopover>
-        </Menu>
-        <ToolbarDivider />
-        <Menu>
-          <MenuTrigger>
-            <MenuItem>
-              {supportedLanguages?.find(({ id }) => id === language)
-                ?.aliases?.[0] ?? language}
-            </MenuItem>
-          </MenuTrigger>
-          <MenuPopover>
-            <MenuList
-              style={{ maxHeight: "calc(100vh - 100px)" }}
-              checkedValues={{ language: [language] }}
-              onCheckedValueChange={(_e, { name, checkedItems }) => {
-                switch (name) {
-                  case "language":
-                    setLanguage(checkedItems?.[0]);
-                    break;
-                }
-              }}
-            >
-              {supportedLanguages?.map((lang) => (
-                <MenuItemRadio name="language" value={lang.id} key={lang.id}>
-                  {lang.aliases?.[0] ?? lang.id}
+                <MenuItemRadio name="encoding" value="utf8">
+                  UTF-8
                 </MenuItemRadio>
-              ))}
-            </MenuList>
-          </MenuPopover>
-        </Menu>
+              </MenuList>
+            </MenuPopover>
+          </Menu>
+          <ToolbarDivider />
+          <Menu>
+            <MenuTrigger>
+              <MenuItem>
+                {supportedLanguages?.find(({ id }) => id === language)
+                  ?.aliases?.[0] ?? language}
+              </MenuItem>
+            </MenuTrigger>
+            <MenuPopover>
+              <MenuList
+                style={{ maxHeight: "calc(100vh - 100px)" }}
+                checkedValues={{ language: [language] }}
+                onCheckedValueChange={(_e, { name, checkedItems }) => {
+                  switch (name) {
+                    case "language":
+                      setLanguage(checkedItems?.[0]);
+                      break;
+                  }
+                }}
+              >
+                {supportedLanguages?.map((lang) => (
+                  <MenuItemRadio name="language" value={lang.id} key={lang.id}>
+                    {lang.aliases?.[0] ?? lang.id}
+                  </MenuItemRadio>
+                ))}
+              </MenuList>
+            </MenuPopover>
+          </Menu>
+        </ToolbarGroup>
       </Toolbar>
     );
   }
