@@ -26,18 +26,19 @@ export default defineConfig({
             name: "HTML/CSS/JS Playground",
             short_name: "Playground",
             url: "/playground",
+            icons: [{
+              src: "./icon192.png",
+              sizes: "192x192",
+              type: "image/png"
+            }]
           },
         ],
         icons: [
           {
-            src: "./icon192.png",
-            sizes: "144x144 192x192",
-            type: "image/png",
-          },
-          {
             src: "./icon512.png",
             sizes: "512x512",
             type: "image/png",
+            purpose: 'any'
           },
         ],
         file_handlers: [
