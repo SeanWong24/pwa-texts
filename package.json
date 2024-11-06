@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@fluentui/react-components": "^9.51.0",
-    "@hey-web-components/monaco-editor": "^0.5.0-pre8",
+    "@hey-web-components/monaco-editor": "^0.5.0-pre9",
     "github-markdown-css": "^5.6.1",
     "highlight.js": "^11.9.0",
     "marked": "^12.0.2",
