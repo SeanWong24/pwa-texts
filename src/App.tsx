@@ -56,6 +56,7 @@ import { modifiedFluentLightTheme } from "./utils/modified-fluent-light-theme";
 import githubMarkdownStyleUrl from "github-markdown-css/github-markdown.css?url";
 import codeHighlightingStyleUrl from "highlight.js/styles/github.css?url";
 import "./App.css";
+import { BeforeInstallPromptEvent } from "./utils/before-install-prompt-event";
 
 type AppProps = {
   snapshot?: boolean;
@@ -124,6 +125,9 @@ function initialAppData() {
 initialAppData();
 
 function App({ snapshot = false, embedded = false }: AppProps) {
+  const [alreadyInstalled, setAlreadyInstalled] = React.useState(false);
+  const [beforeinstallpromptEvent, setBeforeinstallpromptEvent] =
+    React.useState<BeforeInstallPromptEvent>();
   const [lineNumbersEnabled, setLineNumbersEnabled] = React.useState(
     localStorage.getItem("lineNumbersEnabled") === "true"
   );
@@ -153,6 +157,25 @@ function App({ snapshot = false, embedded = false }: AppProps) {
   const previewElement = useRef<HTMLIFrameElement>(null);
 
   const toolbarFarGroupStyles = useToolbarFarGroupStyles();
+
+  useEffect(() => {
+    self.addEventListener("appinstalled", () => {
+      setAlreadyInstalled(true);
+      setBeforeinstallpromptEvent(void 0);
+    });
+
+    self.addEventListener("beforeinstallprompt", async (event) => {
+      if (
+        alreadyInstalled ||
+        localStorage.getItem("havePromptedInstallation")
+      ) {
+        return;
+      }
+      event.preventDefault();
+      setBeforeinstallpromptEvent(event);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     window.addEventListener("beforeunload", (event) => {
@@ -757,6 +780,11 @@ function App({ snapshot = false, embedded = false }: AppProps) {
               </MenuList>
             </MenuPopover>
           </Menu>
+          {beforeinstallpromptEvent ? (
+            <ToolbarButton onClick={() => beforeinstallpromptEvent.prompt()}>
+              Install
+            </ToolbarButton>
+          ) : null}
         </ToolbarGroup>
         <ToolbarGroup>
           {LANGUAGES_SUPPORTING_PREVIEW.includes(language) ? (
@@ -895,16 +923,19 @@ function App({ snapshot = false, embedded = false }: AppProps) {
             }
           }
 
-          setTimeout(()=> {
+          setTimeout(() => {
             if ("launchQueue" in window) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (window as any)["launchQueue"].setConsumer((launchParams: any) => {
-                if (launchParams.files?.length > 0) {
-                  for (const fileHandle of launchParams.files) {
-                    openFile(fileHandle);
+              (window as any)["launchQueue"].setConsumer(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (launchParams: any) => {
+                  if (launchParams.files?.length > 0) {
+                    for (const fileHandle of launchParams.files) {
+                      openFile(fileHandle);
+                    }
                   }
                 }
-              });
+              );
             }
           });
         }}
